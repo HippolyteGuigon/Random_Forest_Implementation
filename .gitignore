@@ -1,3 +1,9 @@
+#Files to be excluded 
+
+*.txt
+*.ipynb
+*ressources/.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
