@@ -16,7 +16,7 @@ The all project is coded under PEP-8 (https://peps.python.org/pep-0008/) and fla
 
 ## Screenshot 
 
-![alt text](https://www.tibco.com/sites/tibco/files/media_entity/2021-05/random-forest-diagram.svg)
+![alt text](https://github.com/HippolyteGuigon/Random_Forest_Implementation/blob/main/ressources/random_forest.png)
 
 Image of a Random Forest decision process
 
