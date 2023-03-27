@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Random_forest.criterion.criterion import gini_impurity, full_gini_compute, variance_reduction
+from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute, variance_reduction
 
 
 class Test(unittest.TestCase):
@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
         
         selected_column, gini_score =full_gini_compute(X, y_categorical)
         
-        self.assertEqual(gini_impurity(y_categorical, y_categorical), 0) 
+        self.assertEqual(gini_impurity_categorical(y_categorical, y_categorical), 0) 
         self.assertTrue(selected_column in range(X.shape[1]))
         self.assertTrue(((gini_score<=1) and (gini_score>=0)))
         

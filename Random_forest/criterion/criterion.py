@@ -1,7 +1,7 @@
 """https://enjoymachinelearning.com/blog/gini-index-vs-entropy/"""
 import numpy as np
 
-def gini_impurity(X: np.array, y: np.array)->tuple:
+def gini_impurity_categorical(X: np.array, y: np.array)->tuple:
     """
     The goal of this function is to take two numpy arrays, 
     and to compute the gini impurity of one related to the 
@@ -32,6 +32,48 @@ def gini_impurity(X: np.array, y: np.array)->tuple:
     
     return gini
 
+def compute_gini_numerical(X: np.array, y: np.array)->tuple:
+    """
+    The goal of this function is to compute the gini score 
+    of a numerical array to perform the split of a categorical
+    array
+    
+    Arguments:
+        -X: np.array: The numerical column which gini score 
+        will be computed 
+        -y: np.array: The target categorical column which 
+        will be compared to the numerical column
+    Returns:
+        -best_candidate: tuple: The gini score of the X 
+        column
+    """
+
+    gini_values=np.array([])
+    unique_targets=np.unique(y, return_counts=False)
+    
+    full_data=np.hstack((X, y))
+    n=full_data.shape[0]
+    full_data=full_data[full_data[:, 0].astype(int).argsort()]
+    tresholds=np.array([(np.float(full_data[i, 0])+np.float(full_data[i+1, 0]))/2 for i in range(full_data.shape[0]-1)])
+    tresholds=np.unique(tresholds, return_counts=False)
+    
+    for treshold in tresholds:
+        left_node=full_data[full_data[:, 0].astype(int)<treshold][:, 1]
+        right_node=full_data[full_data[:, 0].astype(int)>=treshold][:, 1]
+        n_left_node=left_node.shape[0]
+        n_right_node=right_node.shape[0]
+        impurity_right=1
+        impurity_left=1
+
+        for value in unique_targets:
+            impurity_right-=(right_node[right_node==value].shape[0]/n_right_node)**2
+            impurity_left-=(left_node[left_node==value].shape[0]/n_left_node)**2
+        total_impurity=impurity_right*(n_right_node/n)+impurity_left*(n_left_node/n)
+        gini_values=np.append(gini_values, total_impurity)
+    best_treshold_split=tresholds[gini_values.argmin()]
+
+    return best_treshold_split
+
 def full_gini_compute(X: np.array, y: np.array)->tuple:
     """
     The goal of this function is to compute the 
@@ -49,11 +91,7 @@ def full_gini_compute(X: np.array, y: np.array)->tuple:
         column to perform a split
     """
 
-    X_gini_compute=X.copy()
-    for col in range(X_gini_compute.shape[1]):
-        if not isinstance(X_gini_compute[0, col], np.str_):
-            np.delete(X_gini_compute, col, axis=1)
-    full_gini_impurities=[(col, gini_impurity(X_gini_compute[:, col].reshape(-1, 1), y)) for col in range(X_gini_compute.shape[1])]
+    full_gini_impurities=[(col, gini_impurity_categorical(X[:, col].reshape(-1, 1), y)) for col in range(X.shape[1])]
     split_pair = sorted(full_gini_impurities, key=lambda x: x[1])[0]
     return split_pair[0], split_pair[1]
 
@@ -100,12 +138,9 @@ def full_variance_reduction_compute(X: np.array, y: np.array)->tuple:
     Returns:
         -best_split_candidate: tuple: The best column 
         with lowest variance
-    """
-    X_variance_compute=X.copy()
-    for col in range(X_variance_compute.shape[1]):
-        if not isinstance(X_variance_compute[0, col], (np.float32, np.float64, np.int)):
-            np.delete(X_variance_compute, col, axis=1)
-    best_candidates=[(col, variance_reduction(X_variance_compute[:, col].reshape(-1, 1), y)) for col in range(X_variance_compute.shape[1])]
+    """ 
+
+    best_candidates=[(col, variance_reduction(X[:, col].reshape(-1, 1), y)) for col in range(X.shape[1])]
     best_candidates=sorted(best_candidates, key=lambda x: x[1][1])
     best_split_col=best_candidates[0]
 
