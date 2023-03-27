@@ -49,7 +49,11 @@ def full_gini_compute(X: np.array, y: np.array)->tuple:
         column to perform a split
     """
 
-    full_gini_impurities=[(col, gini_impurity(X[:, col].reshape(-1, 1), y)) for col in range(X.shape[1])]
+    X_gini_compute=X.copy()
+    for col in range(X_gini_compute.shape[1]):
+        if not isinstance(X_gini_compute[0, col], np.str_):
+            np.delete(X_gini_compute, col, axis=1)
+    full_gini_impurities=[(col, gini_impurity(X_gini_compute[:, col].reshape(-1, 1), y)) for col in range(X_gini_compute.shape[1])]
     split_pair = sorted(full_gini_impurities, key=lambda x: x[1])[0]
     return split_pair[0], split_pair[1]
 
@@ -83,6 +87,29 @@ def variance_reduction(X: np.array, y: np.array)->tuple:
     best_candidate=variance_candidates[0]
 
     return best_candidate
+
+def full_variance_reduction_compute(X: np.array, y: np.array)->tuple:
+    """
+    The goal of this function is to compute the best categorical 
+    column to split the values of a numerical column
+    
+    Arguments:
+        -X: np.array: The full array containing the 
+        categorical columns
+        -y: np.array: The target numerical array 
+    Returns:
+        -best_split_candidate: tuple: The best column 
+        with lowest variance
+    """
+    X_variance_compute=X.copy()
+    for col in range(X_variance_compute.shape[1]):
+        if not isinstance(X_variance_compute[0, col], (np.float32, np.float64, np.int)):
+            np.delete(X_variance_compute, col, axis=1)
+    best_candidates=[(col, variance_reduction(X_variance_compute[:, col].reshape(-1, 1), y)) for col in range(X_variance_compute.shape[1])]
+    best_candidates=sorted(best_candidates, key=lambda x: x[1][1])
+    best_split_col=best_candidates[0]
+
+    return best_split_col
 
 def entropy(x):
     pass
