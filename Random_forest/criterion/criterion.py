@@ -71,7 +71,6 @@ def variance_reduction(X: np.array, y: np.array)->tuple:
     variance_candidates = []
     split_candidate=np.unique(X, return_counts=False)
     full_data=np.hstack((X, y))
-
     for candidate in split_candidate:
         first_subset=full_data[full_data[:, 0]==candidate, -1].astype(float)
         second_subset=full_data[full_data[:,0]!=candidate, -1].astype(float)
@@ -82,6 +81,8 @@ def variance_reduction(X: np.array, y: np.array)->tuple:
         variance_candidates.append((candidate, total_variance))
     variance_candidates=sorted(variance_candidates,key=lambda x: x[1])
     best_candidate=variance_candidates[0]
-    
+
+    return best_candidate
+
 def entropy(x):
     pass
