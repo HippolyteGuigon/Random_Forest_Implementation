@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute, variance_reduction
+from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute, variance_reduction_categorical, variance_reduction_numerical
 
 
 class Test(unittest.TestCase):
@@ -48,11 +48,16 @@ class Test(unittest.TestCase):
             None
         """
         random_categorical_values = ["a", "b", "c"]
+        random_numerical_values = np.random.normal(size=(50, 1), scale=50)
+        random_numerical_values = np.array(sorted(random_numerical_values))
         X=np.random.choice(random_categorical_values, size=(50,1))
         y=np.random.uniform(size=(50, 1))  
-        best_candidate=variance_reduction(X,y)
-        
-        self.assertTrue((best_candidate[0] in np.unique(X)))
+        best_candidate_categorical=variance_reduction_categorical(X,y)
+        best_candidate_numerical=variance_reduction_numerical(random_numerical_values, y)
+        tresholds=np.array([(np.float(random_numerical_values[i])+np.float(random_numerical_values[i+1]))/2 for i in range(random_numerical_values.shape[0]-1)])
+
+        self.assertTrue((best_candidate_categorical[0] in np.unique(X)))
+        self.assertTrue((best_candidate_numerical[0] in tresholds))
 
 if __name__ == "__main__":
     unittest.main()
