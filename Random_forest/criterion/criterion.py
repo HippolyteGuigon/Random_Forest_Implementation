@@ -54,13 +54,13 @@ def compute_gini_numerical(X: np.array, y: np.array)->tuple:
     
     full_data=np.hstack((X, y))
     n=full_data.shape[0]
-    full_data=full_data[full_data[:, 0].astype(int).argsort()]
+    full_data=full_data[full_data[:, 0].astype(float).argsort()]
     tresholds=np.array([(np.float(full_data[i, 0])+np.float(full_data[i+1, 0]))/2 for i in range(full_data.shape[0]-1)])
     tresholds=np.unique(tresholds, return_counts=False)
     
     for treshold in tresholds:
-        left_node=full_data[full_data[:, 0].astype(int)<treshold][:, 1]
-        right_node=full_data[full_data[:, 0].astype(int)>=treshold][:, 1]
+        left_node=full_data[full_data[:, 0].astype(float)<treshold][:, 1]
+        right_node=full_data[full_data[:, 0].astype(float)>=treshold][:, 1]
         n_left_node=left_node.shape[0]
         n_right_node=right_node.shape[0]
         impurity_right=1
