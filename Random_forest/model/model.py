@@ -6,13 +6,9 @@ from sklearn.utils import check_random_state
 
 class RandomForest:
 
-    def __init__(self, random_state) -> None:
+    def __init__(self, random_state, max_depth=None, min_samples_split=2) -> None:
         self.rng = check_random_state(random_state)
         self.X = self.rng.normal(size=(50, 50))
-        random_categorical_values = ["a", "b", "c"]
-        self.categorical_values = self.rng.choice(random_categorical_values, size=(50, 10))
-        self.X = np.hstack((self.X, self.categorical_values))
-        print(self.X)
+        self.max_depth=max_depth
+        self.min_samples_split=min_samples_split
 
-if __name__=="__main__":
-    a=RandomForest(42)       
