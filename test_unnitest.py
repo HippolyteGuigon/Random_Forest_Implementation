@@ -1,7 +1,10 @@
 import unittest
 import numpy as np
-from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute, variance_reduction_categorical, variance_reduction_numerical
-
+import warnings
+from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute,\
+variance_reduction_categorical, variance_reduction_numerical
+from Random_forest.binary_tree.binary_tree import Node
+warnings.filterwarnings("ignore")
 
 class Test(unittest.TestCase):
     """
@@ -9,7 +12,7 @@ class Test(unittest.TestCase):
     and check everything commited makes sense
     """
 
-    def test_categorical_gini_criterion(self) -> bool:
+    def test_categorical_gini_criterion(self) -> None:
         """
         The goal of this function is to check wheter the 
         gini function works for categorical values
@@ -34,7 +37,7 @@ class Test(unittest.TestCase):
         
         
 
-    def test_variance_reduction(self):
+    def test_variance_reduction(self)-> None:
         """"
         The goal of this function is to check wheter 
         the variance reduction technique works with 
@@ -58,6 +61,38 @@ class Test(unittest.TestCase):
 
         self.assertTrue((best_candidate_categorical[0] in np.unique(X)))
         self.assertTrue((best_candidate_numerical[0] in tresholds))
+
+    def check_split(self)->None:
+        """
+        The goal of this function is to check if, 
+        from a given numpy array composed of multiple
+        data types, the Tree class is able to choose the 
+        best value to perform a split
+        
+        Arguments:
+            None
+        
+        Returns:
+            None
+        """
+
+        target = ["category_a", "category_b", "category_c"]
+        X_numeric=np.random.normal(size=(50, 3), scale=30)
+        X_categorical=np.random.choice(target, size=(50, 3))
+        full_data=np.hstack((X_numeric, X_categorical))
+        y=np.random.randint(5, size=(50, 1))
+
+        Tree=Node()
+        Tree.compute_condition(X_categorical, y)
+        treshold=Tree.treshold
+        if isinstance(treshold, (np.float_, np.int_)):
+            data_test_true=treshold-1
+            data_test_false=treshold+1
+            self.assertTrue(Tree.check_condition(data_test_true))
+            self.assertFalse(Tree.check_condition(data_test_false))
+        else:
+            data_test_true=treshold
+            self.assertTrue(Tree.check_condition(data_test_true))
 
 if __name__ == "__main__":
     unittest.main()

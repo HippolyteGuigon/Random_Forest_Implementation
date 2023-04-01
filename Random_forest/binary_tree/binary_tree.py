@@ -1,8 +1,12 @@
 import numpy as np
 import sys 
+import warnings
 
 sys.path.insert(0, "Random_forest/criterion")
-from criterion import gini_impurity_categorical, compute_gini_numerical, variance_reduction_numerical, variance_reduction_categorical
+from criterion import gini_impurity_categorical, compute_gini_numerical,\
+variance_reduction_numerical, variance_reduction_categorical
+
+warnings.filterwarnings("ignore")
 
 def treshold_numeric(data, reference_value):
     if data<reference_value:
@@ -29,20 +33,9 @@ class Node:
     with appropriate conditions for the construction
     of a decision Tree
     """
-    def __init__(self, data) -> None:
+    def __init__(self) -> None:
         self.left=None
         self.right=None 
-        self.data=data
-
-        #if isinstance(self.data, (float, int)):
-        #    self.condition = staticmethod(treshold_numeric)
-        #else:
-        #    self.condition = staticmethod(split_categorical)
-
-        #if self.condition(self.data, reference_value=3):
-        #    print("Ok")
-        #else:
-        #    print("Not ok")
     
     def compute_condition(self, X:np.array, y: np.array)->None:
         """
@@ -64,22 +57,36 @@ class Node:
 
         for col in range(X.shape[1]):
             if is_float(X[0, col]):
-                print("Numerique")
-                if isinstance(y[0], (np.int_, np.float_)):
+                if isinstance(y.flatten()[0], (np.int_, np.float_)):
                     variance=variance_reduction_numerical(X[:, col].reshape(-1, 1), y)
                     variance_reduction.append(variance)
                 else:
                     gini=compute_gini_numerical(X[:, col].reshape(-1, 1), y)
                     gini_scores.append(gini)
             else:
-                print("Categorique")
-                if isinstance(y[0], (np.int_, np.float_)):
+                if isinstance(y.flatten()[0], (np.int_, np.float_)):
                     variance=variance_reduction_categorical(X[:, col].reshape(-1, 1), y)
-                    variance_reduction.append(X, y)
+                    variance_reduction.append(variance)
                 else:
                     gini=gini_impurity_categorical(X[:, col].reshape(-1, 1), y)
                     gini_scores.append(gini)
-        return variance_reduction, gini_scores
 
+        if len(variance_reduction)>len(gini_scores):
+            criterion_scores= variance_reduction
+        else:
+            criterion_scores= gini_scores
 
+        criterion_scores=sorted(criterion_scores, key=lambda x: x[1])
+        chosen_criteria=criterion_scores[0][0]
 
+        if isinstance(chosen_criteria, (float, int)):
+            self.condition = staticmethod(treshold_numeric)
+        else:
+            self.condition = staticmethod(split_categorical)
+        self.treshold=chosen_criteria
+
+    def check_condition(self, data)->bool:
+        if self.condition(data, reference_value=self.treshold):
+            return True
+        else:
+            return False

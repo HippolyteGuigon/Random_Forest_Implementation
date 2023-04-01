@@ -94,13 +94,13 @@ def variance_reduction_numerical(X: np.array, y: np.array)->Tuple[float, float]:
 
     full_data=np.hstack((X, y))
     n=len(full_data)
-    full_data=full_data[full_data[:, 0].astype(int).argsort()]
+    full_data=full_data[full_data[:, 0].astype(float).argsort()]
     tresholds=np.array([(np.float(full_data[i, 0])+np.float(full_data[i+1, 0]))/2 for i in range(full_data.shape[0]-1)])
     tresholds=np.unique(tresholds, return_counts=False)
 
     for treshold_candidate in tresholds:
-        left_node=full_data[full_data[:, 0].astype(int)<treshold_candidate][:, 1]
-        right_node=full_data[full_data[:, 0].astype(int)>=treshold_candidate][:, 1]
+        left_node=full_data[full_data[:, 0].astype(float)<treshold_candidate][:, 1].astype(float)
+        right_node=full_data[full_data[:, 0].astype(float)>=treshold_candidate][:, 1].astype(float)
         n_left_node=len(left_node)
         n_right_node=len(right_node)
         total_variance = (n_left_node/n)*np.var(left_node)+(n_right_node/n)*np.var(right_node)
