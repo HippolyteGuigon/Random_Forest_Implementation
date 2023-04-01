@@ -79,8 +79,12 @@ class Node:
             criterion_scores= gini_scores
 
         split_column=np.argmin(np.array(a[1] for a in criterion_scores))
-        criterion_scores=sorted(criterion_scores, key=lambda x: x[1])
-        chosen_criteria=criterion_scores[0][0]
+        
+        if isinstance(criterion_scores[0], (float, int)):
+            chosen_criteria=sorted(criterion_scores)[0]
+        else:
+            criterion_scores=sorted(criterion_scores, key=lambda x: x[1])
+            chosen_criteria=criterion_scores[0][0]
 
         if isinstance(chosen_criteria, (float, int)):
             self.condition = staticmethod(treshold_numeric)
@@ -90,6 +94,19 @@ class Node:
         self.split_column=split_column
 
     def check_condition(self, data)->bool:
+        """
+        The goal of this function is to check if 
+        a given data verifies the condition of the 
+        Node and as a consequence, is sent in the left
+        Node or right Node
+        
+        Arguments: 
+            -data: (int, float, str): The data to be checked
+        Returns: 
+            -bool: True or False wheter the condition is respected
+            or not
+        """
+
         if self.condition(data, reference_value=self.split_value):
             return True
         else:
@@ -114,8 +131,8 @@ class Node:
             raise NotFittedError("The condition for this Node needs to be computed first")
         
         vf = np.vectorize(self.condition)
+        
         if self.condition.__func__==treshold_numeric:
-            
             X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
             X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
         else:
