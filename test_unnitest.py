@@ -62,7 +62,8 @@ class Test(unittest.TestCase):
         self.assertTrue((best_candidate_categorical[0] in np.unique(X)))
         self.assertTrue((best_candidate_numerical[0] in tresholds))
 
-    def check_split(self)->None:
+
+    def test_check_split(self)->None:
         """
         The goal of this function is to check if, 
         from a given numpy array composed of multiple
