@@ -57,10 +57,10 @@ class Test(unittest.TestCase):
         y=np.random.uniform(size=(50, 1))  
         best_candidate_categorical=variance_reduction_categorical(X,y)
         best_candidate_numerical=variance_reduction_numerical(random_numerical_values, y)
-        tresholds=np.array([(np.float(random_numerical_values[i])+np.float(random_numerical_values[i+1]))/2 for i in range(random_numerical_values.shape[0]-1)])
+        split_values=np.array([(np.float(random_numerical_values[i])+np.float(random_numerical_values[i+1]))/2 for i in range(random_numerical_values.shape[0]-1)])
 
         self.assertTrue((best_candidate_categorical[0] in np.unique(X)))
-        self.assertTrue((best_candidate_numerical[0] in tresholds))
+        self.assertTrue((best_candidate_numerical[0] in split_values))
 
 
     def test_check_split(self)->None:
@@ -83,16 +83,17 @@ class Test(unittest.TestCase):
         full_data=np.hstack((X_numeric, X_categorical))
         y=np.random.randint(5, size=(50, 1))
 
-        Tree=Node()
-        Tree.compute_condition(X_categorical, y)
-        treshold=Tree.treshold
-        if isinstance(treshold, (np.float_, np.int_)):
-            data_test_true=treshold-1
-            data_test_false=treshold+1
+        Tree=Node(full_data, y)
+        Tree.compute_condition()
+        split_value=Tree.split_value
+        
+        if isinstance(split_value, (np.float_, np.int_)):
+            data_test_true=split_value-1
+            data_test_false=split_value+1
             self.assertTrue(Tree.check_condition(data_test_true))
             self.assertFalse(Tree.check_condition(data_test_false))
         else:
-            data_test_true=treshold
+            data_test_true=split_value
             self.assertTrue(Tree.check_condition(data_test_true))
 
 if __name__ == "__main__":
