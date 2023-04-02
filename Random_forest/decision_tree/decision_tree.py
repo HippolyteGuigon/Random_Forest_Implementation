@@ -77,7 +77,8 @@ class Node:
             criterion_scores= variance_reduction
         else:
             criterion_scores= gini_scores
-
+            criterion_scores=[(a[1], a[0]) for a in criterion_scores]
+        print(criterion_scores)
         split_column=np.argmin(np.array(a[1] for a in criterion_scores))
         
         if isinstance(criterion_scores[0], (float, int)):

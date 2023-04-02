@@ -109,6 +109,7 @@ def variance_reduction_numerical(X: np.array, y: np.array)->Tuple[float, float]:
 
     variance_candidates=sorted(variance_candidates,key=lambda x: x[1])
     best_candidate=variance_candidates[0]
+    best_candidate=best_candidate[::-1]
 
     return best_candidate
 
@@ -140,6 +141,7 @@ def variance_reduction_categorical(X: np.array, y: np.array)->tuple:
         variance_candidates.append((candidate, total_variance))
     variance_candidates=sorted(variance_candidates,key=lambda x: x[1])
     best_candidate=variance_candidates[0]
+    best_candidate=best_candidate[::-1]
 
     return best_candidate
 
