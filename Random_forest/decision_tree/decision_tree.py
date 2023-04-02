@@ -83,8 +83,8 @@ class Node:
         if isinstance(criterion_scores[0], (float, int)):
             chosen_criteria=sorted(criterion_scores)[0]
         else:
-            criterion_scores=sorted(criterion_scores, key=lambda x: x[1])
-            chosen_criteria=criterion_scores[0][0]
+            criterion_scores=sorted(criterion_scores, key=lambda x: x[0])
+            chosen_criteria=criterion_scores[0][1]
 
         if isinstance(chosen_criteria, (float, int)):
             self.condition = staticmethod(treshold_numeric)

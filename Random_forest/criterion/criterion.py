@@ -31,7 +31,7 @@ def gini_impurity_categorical(X: np.array, y: np.array)->tuple:
 
         gini+=(n_value/n)*gini_impurity
     
-    return gini
+    return (gini, X[0][0])
 
 def compute_gini_numerical(X: np.array, y: np.array)->tuple:
     """
@@ -71,9 +71,10 @@ def compute_gini_numerical(X: np.array, y: np.array)->tuple:
             impurity_left-=(left_node[left_node==value].shape[0]/n_left_node)**2
         total_impurity=impurity_right*(n_right_node/n)+impurity_left*(n_left_node/n)
         gini_values=np.append(gini_values, total_impurity)
+    best_gini_score=np.min(gini_values)
     best_treshold_split=tresholds[gini_values.argmin()]
 
-    return best_treshold_split
+    return best_gini_score, best_treshold_split
 
 def variance_reduction_numerical(X: np.array, y: np.array)->Tuple[float, float]:
     """

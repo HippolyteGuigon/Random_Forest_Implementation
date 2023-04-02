@@ -3,7 +3,7 @@ import numpy as np
 import warnings
 from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute,\
 variance_reduction_categorical, variance_reduction_numerical
-from Random_forest.binary_tree.binary_tree import Node
+from Random_forest.decision_tree.decision_tree import Node, treshold_numeric, split_categorical
 warnings.filterwarnings("ignore")
 
 class Test(unittest.TestCase):
