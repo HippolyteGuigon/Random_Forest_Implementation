@@ -16,10 +16,7 @@ def treshold_numeric(data, reference_value):
         return False
     
 def split_categorical(data, reference_value):
-    if data==reference_value:
-        return True
-    else:
-        return False
+    return data==reference_value
 
 def is_float(x):
     try:
