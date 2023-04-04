@@ -1,10 +1,9 @@
 import numpy as np
-import sys 
 import warnings
 
-sys.path.insert(0, "Random_forest/criterion")
-from criterion import gini_impurity_categorical, compute_gini_numerical,\
-variance_reduction_numerical, variance_reduction_categorical
+from Random_forest.criterion.criterion import gini_impurity_categorical,\
+compute_gini_numerical, variance_reduction_numerical,\
+variance_reduction_categorical
 from sklearn.exceptions import NotFittedError
 
 warnings.filterwarnings("ignore")
