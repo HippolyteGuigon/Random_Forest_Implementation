@@ -143,14 +143,18 @@ class Decision_Tree:
     with different conditions
 
     Arguments:
+        -X: np.array: The array to be fitted on
+        -y: np.array: The target array
         -max_depth: int: The maximum depth the Tree
         can reach 
 
     Returns:
         None
     """
-    def __init__(self, max_depth: int) -> None:
+    def __init__(self, X: np.array, y: np.array, max_depth: int) -> None:
         self.max_depth=max_depth
+        self.X=X
+        self.y=y
 
     def depth(self)->int:
         """
