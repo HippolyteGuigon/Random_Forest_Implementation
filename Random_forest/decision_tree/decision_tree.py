@@ -75,7 +75,7 @@ class Node:
         else:
             criterion_scores= gini_scores
             criterion_scores=[(a[1], a[0]) for a in criterion_scores]
-        print(criterion_scores)
+
         split_column=np.argmin(np.array(a[1] for a in criterion_scores))
         
         if isinstance(criterion_scores[0], (float, int)):
@@ -85,9 +85,9 @@ class Node:
             chosen_criteria=criterion_scores[0][1]
 
         if isinstance(chosen_criteria, (float, int)):
-            self.condition = staticmethod(treshold_numeric)
+            self.condition = staticmethod(treshold_numeric).__func__
         else:
-            self.condition = staticmethod(split_categorical)
+            self.condition = staticmethod(split_categorical).__func__
         self.split_value=chosen_criteria
         self.split_column=split_column
 
