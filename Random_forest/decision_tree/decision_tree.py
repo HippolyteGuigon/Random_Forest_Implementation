@@ -4,48 +4,12 @@ import warnings
 from Random_forest.criterion.criterion import gini_impurity_categorical,\
 compute_gini_numerical, variance_reduction_numerical,\
 variance_reduction_categorical
+from Random_forest.decision_tree.array_functions import float_array_converter, treshold_numeric, \
+split_categorical, is_float
 from sklearn.exceptions import NotFittedError
 
 warnings.filterwarnings("ignore")
 
-def treshold_numeric(data: float, reference_value: float)->bool:
-    """
-    The goal of this function is to compare 
-    a given data to a reference value to check
-    whether it should go left or right node
-    
-    Arguments:
-        -data: float: The data to be attributed
-        left or right Node
-        -reference_value: float: The treshold it
-        is compared with
-    """
-    if data<reference_value:
-        return True
-    else:
-        return False
-    
-def split_categorical(data: str, reference_value: str)->bool:
-    """
-    The goal of this function is to compare 
-    a given data to a reference value to check
-    whether it should go left or right node
-    
-    Arguments:
-        -data: str: The data to be attributed
-        left or right Node
-        -reference_value: str: The categorical value
-        it is compared with
-    """
-    return data==reference_value
-
-def is_float(x):
-    try:
-        x=float(x)
-        return True
-    except ValueError:
-        return False
-    
 class Node:
     """
     The goal of this class is to compute a Node 
@@ -74,7 +38,7 @@ class Node:
         variance_reduction=[]
         gini_scores=[]
         self.X.sort()
-
+        
         for col in range(self.X.shape[1]):
             if is_float(self.X[0, col]):
                 if isinstance(self.y.flatten()[0], (np.int_, np.float_)):
@@ -150,16 +114,21 @@ class Node:
         
         self.X=np.hstack((self.X, self.y))
         if self.condition==treshold_numeric:
-            self.X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
-            self.X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
-            self.y_left_node=self.X_left_node[:, -1]
-            self.y_right_node=self.X_right_node[:, -1]
+            X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)][:, :-1]
+            print(X_left_node)
+            X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)][:, :-1]
+            y_left_node=X_left_node[:, -1].reshape(-1, 1)
+            y_right_node=X_right_node[:, -1].reshape(-1, 1)
         else:
-            self.X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
-            self.X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
-            self.y_left_node=self.X_left_node[:, -1]
-            self.y_right_node=self.X_right_node[:, -1]    
+            X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)][:, :-1]
+            X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)][:, :-1]
+            y_left_node=X_left_node[:, -1].reshape(-1, 1)
+            y_right_node=X_right_node[:, -1].reshape(-1, 1)
 
+        self.X_left_node=X_left_node
+        self.X_right_node=X_right_node
+        self.y_left_node=y_left_node
+        self.y_right_node=y_right_node
 
 class Decision_Tree:
 
