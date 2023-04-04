@@ -168,9 +168,10 @@ class Decision_Tree:
             -tree_depth: int: The computed 
             depth of the binary tree
         """
-        if self.left == None and self.right == None:
-            return 1
+        
+        left_depth = self.left.depth() if self.left else 0
+        right_depth = self.right.depth() if self.right else 0
 
-        tree_depth=max(self.depth(self.left), self.depth(self.right)) + 1
+        tree_depth=max(left_depth, right_depth) + 1
         
         return tree_depth
