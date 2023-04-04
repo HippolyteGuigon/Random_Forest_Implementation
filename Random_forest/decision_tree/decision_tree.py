@@ -9,13 +9,35 @@ from sklearn.exceptions import NotFittedError
 
 warnings.filterwarnings("ignore")
 
-def treshold_numeric(data, reference_value):
+def treshold_numeric(data: float, reference_value: float)->bool:
+    """
+    The goal of this function is to compare 
+    a given data to a reference value to check
+    whether it should go left or right node
+    
+    Arguments:
+        -data: float: The data to be attributed
+        left or right Node
+        -reference_value: float: The treshold it
+        is compared with
+    """
     if data<reference_value:
         return True
     else:
         return False
     
-def split_categorical(data, reference_value):
+def split_categorical(data: str, reference_value: str)->bool:
+    """
+    The goal of this function is to compare 
+    a given data to a reference value to check
+    whether it should go left or right node
+    
+    Arguments:
+        -data: str: The data to be attributed
+        left or right Node
+        -reference_value: str: The categorical value
+        it is compared with
+    """
     return data==reference_value
 
 def is_float(x):
@@ -135,3 +157,9 @@ class Node:
             X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
 
         return X_left_node, X_right_node
+
+
+class Decision_Tree:
+
+    def __init__(self) -> None:
+        pass
