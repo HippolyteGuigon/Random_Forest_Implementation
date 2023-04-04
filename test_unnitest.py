@@ -3,7 +3,7 @@ import numpy as np
 import warnings
 from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute,\
 variance_reduction_categorical, variance_reduction_numerical
-from Random_forest.decision_tree.decision_tree import Node, treshold_numeric, split_categorical
+from Random_forest.decision_tree.decision_tree import Node
 warnings.filterwarnings("ignore")
 
 class Test(unittest.TestCase):
@@ -90,11 +90,11 @@ class Test(unittest.TestCase):
         if isinstance(split_value, (np.float_, np.int_)):
             data_test_true=split_value-1
             data_test_false=split_value+1
-            self.assertTrue(Tree.check_condition(data_test_true))
-            self.assertFalse(Tree.check_condition(data_test_false))
+            self.assertTrue(Tree.condition(data_test_true, reference_value=split_value))
+            self.assertFalse(Tree.condition(data_test_false, reference_value=split_value))
         else:
             data_test_true=split_value
-            self.assertTrue(Tree.check_condition(data_test_true))
+            self.assertTrue(Tree.condition(data_test_true, reference_value=split_value))
 
 if __name__ == "__main__":
     unittest.main()
