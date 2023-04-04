@@ -105,10 +105,7 @@ class Node:
             or not
         """
 
-        if self.condition(data, reference_value=self.split_value):
-            return True
-        else:
-            return False
+        return self.condition(data, reference_value=self.split_value)
 
     def get_data_subsets(self):
         """
