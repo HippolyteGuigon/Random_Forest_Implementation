@@ -128,7 +128,7 @@ class Node:
 
         return self.condition(data, reference_value=self.split_value)
 
-    def get_data_subsets(self):
+    def get_data_subsets(self)->None:
         """
         The goal of this function is, once the condition
         has been computed, to get the data both for left 
@@ -148,17 +148,20 @@ class Node:
         
         vf = np.vectorize(self.condition)
         
-        if self.condition.__func__==treshold_numeric:
-            X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
-            X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
+        self.X=np.hstack((self.X, self.y))
+        if self.condition==treshold_numeric:
+            self.X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
+            self.X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
+            self.y_left_node=self.X_left_node[:, -1]
+            self.y_right_node=self.X_right_node[:, -1]
         else:
-            X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
-            X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
-
-        return X_left_node, X_right_node
+            self.X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
+            self.X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
+            self.y_left_node=self.X_left_node[:, -1]
+            self.y_right_node=self.X_right_node[:, -1]    
 
 
 class Decision_Tree:
 
-    def __init__(self) -> None:
+    def __init__(self, max_depth: int) -> None:
         pass
