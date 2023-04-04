@@ -59,10 +59,16 @@ class Node:
             criterion_scores= variance_reduction
         else:
             criterion_scores= gini_scores
-            criterion_scores=[(a[1], a[0]) for a in criterion_scores]
-
-        split_column=np.argmin(np.array(a[1] for a in criterion_scores))
+            criterion_scores=[[a[1], a[0]] for a in criterion_scores]
         
+        for score_couple_index in range(len(criterion_scores)):
+            if isinstance(criterion_scores[score_couple_index][0], str):
+                criterion_scores[score_couple_index][0], criterion_scores[score_couple_index][1]\
+                =criterion_scores[score_couple_index][1], criterion_scores[score_couple_index][0]
+        
+        criterion_scores=[tuple(x) for x in criterion_scores]
+        split_column=np.argmin(np.array(a[1] for a in criterion_scores))
+        print("criterion_scores", criterion_scores)
         if isinstance(criterion_scores[0], (float, int)):
             chosen_criteria=sorted(criterion_scores)[0]
         else:
@@ -115,7 +121,6 @@ class Node:
         self.X=np.hstack((self.X, self.y))
         if self.condition==treshold_numeric:
             X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)][:, :-1]
-            print(X_left_node)
             X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)][:, :-1]
             y_left_node=X_left_node[:, -1].reshape(-1, 1)
             y_right_node=X_right_node[:, -1].reshape(-1, 1)
