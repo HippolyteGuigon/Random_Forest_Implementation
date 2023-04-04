@@ -136,6 +136,37 @@ class Node:
         self.y_right_node=y_right_node
 
 class Decision_Tree:
+    """
+    The goal of this class is to elaborate, 
+    from the Node class computed above, a 
+    Decision Tree consisting of multiple nodes
+    with different conditions
 
+    Arguments:
+        -max_depth: int: The maximum depth the Tree
+        can reach 
+
+    Returns:
+        None
+    """
     def __init__(self, max_depth: int) -> None:
-        pass
+        self.max_depth=max_depth
+
+    def depth(self)->int:
+        """
+        The goal of this function is to
+        compute the depth of the Tree 
+        
+        Arguments:
+            None
+        
+        Returns:
+            -tree_depth: int: The computed 
+            depth of the binary tree
+        """
+        if self.left == None and self.right == None:
+            return 1
+
+        tree_depth=max(self.depth(self.left), self.depth(self.right)) + 1
+        
+        return tree_depth
