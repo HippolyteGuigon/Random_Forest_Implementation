@@ -147,14 +147,20 @@ class Decision_Tree:
         -y: np.array: The target array
         -max_depth: int: The maximum depth the Tree
         can reach 
+        -min_samples_split: int: The minimum number 
+        of samples required to split an internal node
 
     Returns:
         None
     """
-    def __init__(self, X: np.array, y: np.array, max_depth: int) -> None:
+
+    def __init__(self, X: np.array, y: np.array, max_depth: int, 
+    min_samples_split: int) -> None:
         self.max_depth=max_depth
+        self.min_samples_split=min_samples_split
         self.X=X
         self.y=y
+        self.node=Node(X, y)
 
     def depth(self)->int:
         """
@@ -175,3 +181,13 @@ class Decision_Tree:
         tree_depth=max(left_depth, right_depth) + 1
         
         return tree_depth
+
+    def iterate(self, node):
+        if np.any(node.X):
+            node.X.compute_condition()
+            node.X.get_data_subsets()
+
+            if len(node.y_left_node)>=self.min_samples_split:
+                node.left=Node(node.X_left_node, node.y_left_node)
+            if len(node.y_right_node)>=self.min_samples_split:
+                node.right=Node(node.X_right_node, node.y_right_node)
