@@ -68,7 +68,7 @@ class Node:
         
         criterion_scores=[tuple(x) for x in criterion_scores]
         split_column=np.argmin(np.array(a[1] for a in criterion_scores))
-        print("criterion_scores", criterion_scores)
+
         if isinstance(criterion_scores[0], (float, int)):
             chosen_criteria=sorted(criterion_scores)[0]
         else:
@@ -154,15 +154,15 @@ class Decision_Tree:
         None
     """
 
-    def __init__(self, X: np.array, y: np.array, max_depth: int, 
-    min_samples_split: int) -> None:
+    def __init__(self, X: np.array, y: np.array, max_depth: int=4, 
+    min_samples_split: int = 10) -> None:
         self.max_depth=max_depth
         self.min_samples_split=min_samples_split
         self.X=X
         self.y=y
         self.node=Node(X, y)
 
-    def depth(self)->int:
+    def depth(self, node)->int:
         """
         The goal of this function is to
         compute the depth of the Tree 
@@ -175,19 +175,70 @@ class Decision_Tree:
             depth of the binary tree
         """
         
-        left_depth = self.left.depth() if self.left else 0
-        right_depth = self.right.depth() if self.right else 0
+        if node is None:
+            return 0
+    
+        else:
+    
+            # Compute the depth of each subtree
+            lDepth = self.depth(node.left)
+            rDepth = self.depth(node.right)
+    
+            # Use the larger one
+            if (lDepth > rDepth):
+                return lDepth+1
+            else:
+                return rDepth+1
 
-        tree_depth=max(left_depth, right_depth) + 1
+    def grow_node(self, node):
+        """
+        Le but de cette fonction est de passer 
+        d'un noeud simple à un noeud avec une feuille
+        gauche et une feuille droite
+        """
+
+        if node.X.shape[0]>=self.min_samples_split and self.depth(self.node)<self.max_depth:
+            node.compute_condition()
+            node.get_data_subsets()
+            node.left=Node(node.X_left_node, node.y_left_node)
+            node.right=Node(node.X_right_node, node.y_right_node)
+            
+            if node.left.X.shape[0]>=self.min_samples_split:
+                self.grow_node(node.left)
+            if node.right.X.shape[0]>=self.min_samples_split:
+                self.grow_node(node.right)
+
+    def iterate(self, node)->None:
+        """
+        The goal of this function is, for a given node
+        of the Decision Tree, to build both left and right
+        nodes provided conditions are respected
         
-        return tree_depth
+        Arguments:
+            -node: 
+        Returns:
+            None
+        """
+        print("Node",node)
+        print("Right node", node.right)
+        print("Left node", node.left)
+        if node.X.shape[0]>=self.min_samples_split:
+            node.compute_condition()
+            node.get_data_subsets()
 
-    def iterate(self, node):
-        if np.any(node.X):
-            node.X.compute_condition()
-            node.X.get_data_subsets()
+            if node.left.X.shape[0]>=self.min_samples_split:
 
-            if len(node.y_left_node)>=self.min_samples_split:
-                node.left=Node(node.X_left_node, node.y_left_node)
-            if len(node.y_right_node)>=self.min_samples_split:
-                node.right=Node(node.X_right_node, node.y_right_node)
+                self.left=Node(node.X_left_node, node.y_left_node)
+                self.left.compute_condition()
+                self.left.get_data_subsets()
+                node.left=self.iterate(self.left)
+
+            if self.right.X.shape[0]>=self.min_samples_split:
+
+                self.right=Node(node.X_right_node, node.y_right_node)
+                self.right.compute_condition()
+                self.right.get_data_subsets()
+                node.right=self.iterate(self.right)
+
+
+           
