@@ -37,7 +37,6 @@ class Node:
         """
         variance_reduction=[]
         gini_scores=[]
-        self.X.sort()
         
         for col in range(self.X.shape[1]):
             if is_float(self.X[0, col]):
@@ -66,15 +65,13 @@ class Node:
                 =criterion_scores[score_couple_index][1], criterion_scores[score_couple_index][0]
         
         criterion_scores=[tuple(x) for x in criterion_scores]
-        print("criterion_score", criterion_scores)
-        split_column=np.argmin(np.array(a[1] for a in criterion_scores))
-        print(split_column)
+        print(criterion_scores)
+        split_column=np.argmin([float(x[0]) for x in criterion_scores])
         if isinstance(criterion_scores[0], (float, int)):
             chosen_criteria=sorted(criterion_scores)[0]
         else:
             criterion_scores=sorted(criterion_scores, key=lambda x: x[0])
             chosen_criteria=criterion_scores[0][1]
-        print(chosen_criteria)
         if isinstance(chosen_criteria, (float, int)):
             self.condition = staticmethod(treshold_numeric).__func__
         else:
@@ -119,21 +116,29 @@ class Node:
         vf = np.vectorize(self.condition)
         
         self.X=np.hstack((self.X, self.y))
+        print('split_column',self.split_column)
+        print("condition", self.split_value)
+        print(self.X[:, self.split_column])
         if self.condition==treshold_numeric:
-            X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)][:, :-1]
-            X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)][:, :-1]
+            X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
+            X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
             y_left_node=X_left_node[:, -1].reshape(-1, 1)
             y_right_node=X_right_node[:, -1].reshape(-1, 1)
+            X_left_node=X_left_node[:, :-1]
+            X_right_node=X_right_node[:, :-1]
         else:
-            X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)][:, :-1]
-            X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)][:, :-1]
+            X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
+            X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
             y_left_node=X_left_node[:, -1].reshape(-1, 1)
             y_right_node=X_right_node[:, -1].reshape(-1, 1)
+            X_left_node=X_left_node[:, :-1]
+            X_right_node=X_right_node[:, :-1]
 
         self.X_left_node=X_left_node
         self.X_right_node=X_right_node
         self.y_left_node=y_left_node
         self.y_right_node=y_right_node
+        
 
 class Decision_Tree:
     """
@@ -198,11 +203,11 @@ class Decision_Tree:
         """
 
         if node.X.shape[0]>=self.min_samples_split and self.depth(self.node)<self.max_depth:
+            
             node.compute_condition()
             node.get_data_subsets()
             node.left=Node(node.X_left_node, node.y_left_node)
             node.right=Node(node.X_right_node, node.y_right_node)
-            
             if node.left.X.shape[0]>=self.min_samples_split:
                 self.grow_node(node.left)
             if node.right.X.shape[0]>=self.min_samples_split:
