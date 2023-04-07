@@ -59,7 +59,6 @@ class Node:
             criterion_scores= variance_reduction
         else:
             criterion_scores= gini_scores
-            criterion_scores=[[a[1], a[0]] for a in criterion_scores]
         
         for score_couple_index in range(len(criterion_scores)):
             if isinstance(criterion_scores[score_couple_index][0], str):
@@ -67,14 +66,15 @@ class Node:
                 =criterion_scores[score_couple_index][1], criterion_scores[score_couple_index][0]
         
         criterion_scores=[tuple(x) for x in criterion_scores]
+        print("criterion_score", criterion_scores)
         split_column=np.argmin(np.array(a[1] for a in criterion_scores))
-
+        print(split_column)
         if isinstance(criterion_scores[0], (float, int)):
             chosen_criteria=sorted(criterion_scores)[0]
         else:
             criterion_scores=sorted(criterion_scores, key=lambda x: x[0])
             chosen_criteria=criterion_scores[0][1]
-
+        print(chosen_criteria)
         if isinstance(chosen_criteria, (float, int)):
             self.condition = staticmethod(treshold_numeric).__func__
         else:
