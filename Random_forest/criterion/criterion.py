@@ -1,4 +1,3 @@
-"""https://enjoymachinelearning.com/blog/gini-index-vs-entropy/"""
 import numpy as np
 from typing import Tuple
 
@@ -66,9 +65,12 @@ def compute_gini_numerical(X: np.array, y: np.array)->tuple:
         impurity_right=1
         impurity_left=1
 
-        for value in unique_targets:
-            impurity_right-=(right_node[right_node==value].shape[0]/n_right_node)**2
-            impurity_left-=(left_node[left_node==value].shape[0]/n_left_node)**2
+        unique_target_left=np.unique(left_node,return_counts=False)
+        unique_target_right=np.unique(right_node,return_counts=False)
+
+        for value_left, value_right in zip(unique_target_left, unique_target_right):
+            impurity_right-=(right_node[right_node==value_right].shape[0]/n_right_node)**2
+            impurity_left-=(left_node[left_node==value_left].shape[0]/n_left_node)**2
         total_impurity=impurity_right*(n_right_node/n)+impurity_left*(n_left_node/n)
         gini_values=np.append(gini_values, total_impurity)
     best_gini_score=np.min(gini_values)
@@ -105,11 +107,11 @@ def variance_reduction_numerical(X: np.array, y: np.array)->Tuple[float, float]:
         n_left_node=len(left_node)
         n_right_node=len(right_node)
         total_variance = (n_left_node/n)*np.var(left_node)+(n_right_node/n)*np.var(right_node)
-        variance_candidates.append((treshold_candidate, total_variance))
+        if not np.isnan(total_variance):
+            variance_candidates.append((total_variance, treshold_candidate))
 
-    variance_candidates=sorted(variance_candidates,key=lambda x: x[1])
+    variance_candidates=sorted(variance_candidates,key=lambda x: x[0])
     best_candidate=variance_candidates[0]
-    best_candidate=best_candidate[::-1]
 
     return best_candidate
 
@@ -142,7 +144,6 @@ def variance_reduction_categorical(X: np.array, y: np.array)->tuple:
     variance_candidates=sorted(variance_candidates,key=lambda x: x[1])
     best_candidate=variance_candidates[0]
     best_candidate=best_candidate[::-1]
-
     return best_candidate
 
 def full_gini_compute(X: np.array, y: np.array)->tuple:
@@ -163,6 +164,7 @@ def full_gini_compute(X: np.array, y: np.array)->tuple:
     """
 
     full_gini_impurities=[(col, gini_impurity_categorical(X[:, col].reshape(-1, 1), y)) for col in range(X.shape[1])]
+    print("full_gini_impuriity", full_gini_impurities)
     split_pair = sorted(full_gini_impurities, key=lambda x: x[1])[0]
     return split_pair[0], split_pair[1]
 
