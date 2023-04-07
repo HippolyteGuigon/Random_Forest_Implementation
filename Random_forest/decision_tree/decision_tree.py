@@ -65,7 +65,6 @@ class Node:
                 =criterion_scores[score_couple_index][1], criterion_scores[score_couple_index][0]
         
         criterion_scores=[tuple(x) for x in criterion_scores]
-        print(criterion_scores)
         split_column=np.argmin([float(x[0]) for x in criterion_scores])
         if isinstance(criterion_scores[0], (float, int)):
             chosen_criteria=sorted(criterion_scores)[0]
@@ -116,29 +115,27 @@ class Node:
         vf = np.vectorize(self.condition)
         
         self.X=np.hstack((self.X, self.y))
-        print('split_column',self.split_column)
-        print("condition", self.split_value)
-        print(self.X[:, self.split_column])
         if self.condition==treshold_numeric:
             X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
-            X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
+            X_right_node=self.X[~(vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value))]
             y_left_node=X_left_node[:, -1].reshape(-1, 1)
             y_right_node=X_right_node[:, -1].reshape(-1, 1)
             X_left_node=X_left_node[:, :-1]
             X_right_node=X_right_node[:, :-1]
+            
         else:
             X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
-            X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
+            X_right_node=self.X[~(vf(self.X[:, self.split_column], reference_value=self.split_value))]
             y_left_node=X_left_node[:, -1].reshape(-1, 1)
             y_right_node=X_right_node[:, -1].reshape(-1, 1)
             X_left_node=X_left_node[:, :-1]
             X_right_node=X_right_node[:, :-1]
-
+        
+        self.X=self.X[:, :-1]
         self.X_left_node=X_left_node
         self.X_right_node=X_right_node
         self.y_left_node=y_left_node
-        self.y_right_node=y_right_node
-        
+        self.y_right_node=y_right_node  
 
 class Decision_Tree:
     """
@@ -159,7 +156,7 @@ class Decision_Tree:
         None
     """
 
-    def __init__(self, X: np.array, y: np.array, max_depth: int=4, 
+    def __init__(self, X: np.array, y: np.array, max_depth: int=10, 
     min_samples_split: int = 10) -> None:
         self.max_depth=max_depth
         self.min_samples_split=min_samples_split
@@ -201,7 +198,6 @@ class Decision_Tree:
         d'un noeud simple à un noeud avec une feuille
         gauche et une feuille droite
         """
-
         if node.X.shape[0]>=self.min_samples_split and self.depth(self.node)<self.max_depth:
             
             node.compute_condition()
