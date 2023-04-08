@@ -2,16 +2,32 @@ import numpy as np
 import sys
 from sklearn.utils import check_random_state
 from Random_forest.decision_tree.decision_tree import Decision_Tree
+from Random_forest.configs.confs import load_conf
 
-class RandomForest(Decision_Tree):
+main_params=load_conf("configs/main.yml", include=True)
+max_depth=main_params["model_hyperparameters"]["max_depth"]
+min_sample_split=main_params["model_hyperparameters"]["min_sample_split"]
 
-    def __init__(self, random_state) -> None:
+class RandomForest:
+    def __init__(self, random_state, max_depth: int=max_depth, 
+                 min_sample_split: int = min_sample_split, **kwargs) -> None:
         self.rng = check_random_state(random_state)
         self.X = self.rng.normal(size=(50, 50))
-        self.max_depth=Decision_Tree.max_depth
-        self.min_samples_split=Decision_Tree.min_samples_split
-        print(self.max_depth)
+        self.max_depth=max_depth
+        self.min_samples_split=min_sample_split
 
-if __name__=="__main__":
-    test=RandomForest(42)
+    def fit(self, X: np.array, y: np.array)->None:
+        self.X=X
+        self.y=y
+
+        if self.X.shape[0] != self.y.shape[0]:
+            raise ValueError(f"X and y must have the same number of rows, X\
+                              contains {self.X.shape[0]} and y {self.y.shape[0]}")
+        if self.y.shape[1]>1:
+            raise ValueError(f"The target dataset must only contain\
+                              one column, it contains {self.y.shape[1]}")
+        assert self.X.shape[0]<=self.min_samples_split, f"The number of rows\
+            of X, {self.X.shape[0]} must be superior to min_sample_split\
+                 hyperparameter {self.min_samples_split}"
+        
 
