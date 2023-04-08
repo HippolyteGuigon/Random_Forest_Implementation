@@ -1,0 +1,1 @@
+pytest_configs: !include pytest_configs.yml
