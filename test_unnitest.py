@@ -3,7 +3,7 @@ import numpy as np
 import warnings
 from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute,\
 variance_reduction_categorical, variance_reduction_numerical
-from Random_forest.decision_tree.decision_tree import Node
+from Random_forest.decision_tree.decision_tree import Node, Decision_Tree, get_bottom_values
 warnings.filterwarnings("ignore")
 
 class Test(unittest.TestCase):
@@ -95,6 +95,40 @@ class Test(unittest.TestCase):
         else:
             data_test_true=split_value
             self.assertTrue(Tree.condition(data_test_true, reference_value=split_value))
+
+    def test_tree_values_allocation(self):
+        """
+        The goal of this function is to check if
+        the values given to a binary tree are well
+        and all allocated 
+        
+        Arguments:
+            None
+        
+        Returns:
+            None
+        """
+        categorical_value_1=["retraités", "actifs", "étudiant"]
+        categorical_value_2=["a", "b", "c", "d", "e"]
+
+        X_numeric_normal=np.random.normal(scale=50, size=(300, 1))
+        X_numeric_geometric=np.random.geometric(p=0.1,size=(300,1))
+        X_numeric_poisson=np.random.poisson(size=(300,1))
+        X_numeric=np.hstack((X_numeric_normal,X_numeric_geometric,X_numeric_poisson))
+
+        X_categorical_1=np.random.choice(categorical_value_1, size=(300,1))
+        X_categorical_2=np.random.choice(categorical_value_2, size=(300,1))
+        X_categorical=np.hstack((X_categorical_1,X_categorical_2))
+
+        X=np.hstack((X_categorical,X_numeric))
+        y=np.random.exponential(size=(300,1))
+
+        Tree=Decision_Tree(X, y)
+        Tree.grow_node(Tree.node)
+        bottom_values=get_bottom_values(Tree.node)
+        bottom_sum=np.sum(bottom_values)
+
+        self.assertEqual(bottom_sum, X.shape[0])
 
 if __name__ == "__main__":
     unittest.main()
