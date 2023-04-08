@@ -5,6 +5,10 @@ from Random_forest.criterion.criterion import gini_impurity_categorical, full_gi
 variance_reduction_categorical, variance_reduction_numerical
 from Random_forest.decision_tree.decision_tree import Node, Decision_Tree, get_bottom_values
 warnings.filterwarnings("ignore")
+from Random_forest.configs.confs import load_conf
+
+main_params = load_conf("configs/main.yml", include=True)
+row_size_test_dataset=main_params["pytest_configs"]["row_size_test_dataset"]
 
 class Test(unittest.TestCase):
     """
@@ -25,9 +29,9 @@ class Test(unittest.TestCase):
         """
         random_categorical_values = ["a", "b", "c"]
         target = ["survivor", "non_survivor"]
-        X=np.random.choice(random_categorical_values,size=(50, 5))
-        X_numerical_check=np.random.choice(random_categorical_values, size=(50,1))
-        y_categorical=np.random.choice(target, size=(50, 1)) 
+        X=np.random.choice(random_categorical_values,size=(row_size_test_dataset, 5))
+        X_numerical_check=np.random.choice(random_categorical_values, size=(row_size_test_dataset,1))
+        y_categorical=np.random.choice(target, size=(row_size_test_dataset, 1)) 
         
         selected_column, gini_score =full_gini_compute(X, y_categorical)
         
@@ -51,10 +55,10 @@ class Test(unittest.TestCase):
             None
         """
         random_categorical_values = ["a", "b", "c"]
-        random_numerical_values = np.random.normal(size=(50, 1), scale=50)
+        random_numerical_values = np.random.normal(size=(row_size_test_dataset, 1), scale=50)
         random_numerical_values = np.array(sorted(random_numerical_values))
-        X=np.random.choice(random_categorical_values, size=(50,1))
-        y=np.random.uniform(size=(50, 1))  
+        X=np.random.choice(random_categorical_values, size=(row_size_test_dataset,1))
+        y=np.random.uniform(size=(row_size_test_dataset, 1))  
         best_candidate_categorical=variance_reduction_categorical(X,y)
         best_candidate_numerical=variance_reduction_numerical(random_numerical_values, y)
         split_values=np.array([(np.float(random_numerical_values[i])+np.float(random_numerical_values[i+1]))/2 for i in range(random_numerical_values.shape[0]-1)])
@@ -78,10 +82,10 @@ class Test(unittest.TestCase):
         """
 
         target = ["category_a", "category_b", "category_c"]
-        X_numeric=np.random.normal(size=(50, 3), scale=30)
-        X_categorical=np.random.choice(target, size=(50, 3))
+        X_numeric=np.random.normal(size=(row_size_test_dataset, 3), scale=30)
+        X_categorical=np.random.choice(target, size=(row_size_test_dataset, 3))
         full_data=np.hstack((X_numeric, X_categorical))
-        y=np.random.randint(5, size=(50, 1))
+        y=np.random.randint(5, size=(row_size_test_dataset, 1))
 
         Tree=Node(full_data, y)
         Tree.compute_condition()
@@ -111,24 +115,24 @@ class Test(unittest.TestCase):
         categorical_value_1=["retraités", "actifs", "étudiant"]
         categorical_value_2=["a", "b", "c", "d", "e"]
 
-        X_numeric_normal=np.random.normal(scale=50, size=(300, 1))
-        X_numeric_geometric=np.random.geometric(p=0.1,size=(300,1))
-        X_numeric_poisson=np.random.poisson(size=(300,1))
+        X_numeric_normal=np.random.normal(scale=row_size_test_dataset, size=(row_size_test_dataset, 1))
+        X_numeric_geometric=np.random.geometric(p=0.1,size=(row_size_test_dataset,1))
+        X_numeric_poisson=np.random.poisson(size=(row_size_test_dataset,1))
         X_numeric=np.hstack((X_numeric_normal,X_numeric_geometric,X_numeric_poisson))
 
-        X_categorical_1=np.random.choice(categorical_value_1, size=(300,1))
-        X_categorical_2=np.random.choice(categorical_value_2, size=(300,1))
+        X_categorical_1=np.random.choice(categorical_value_1, size=(row_size_test_dataset,1))
+        X_categorical_2=np.random.choice(categorical_value_2, size=(row_size_test_dataset,1))
         X_categorical=np.hstack((X_categorical_1,X_categorical_2))
 
         X=np.hstack((X_categorical,X_numeric))
-        y=np.random.exponential(size=(300,1))
+        y=np.random.exponential(size=(row_size_test_dataset,1))
 
         Tree=Decision_Tree(X, y)
         Tree.grow_node(Tree.node)
         bottom_values=get_bottom_values(Tree.node)
         bottom_sum=np.sum(bottom_values)
 
-        self.assertEqual(bottom_sum, X.shape[0])
+        self.assertEqual(bottom_sum, row_size_test_dataset)
 
 if __name__ == "__main__":
     unittest.main()
