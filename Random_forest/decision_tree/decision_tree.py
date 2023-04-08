@@ -7,14 +7,51 @@ variance_reduction_categorical
 from Random_forest.decision_tree.array_functions import float_array_converter, treshold_numeric, \
 split_categorical, is_float
 from sklearn.exceptions import NotFittedError
+from typing import List
 
 warnings.filterwarnings("ignore")
+
+bottom_values=[]
+def get_bottom_values(node)->List[int]:
+    """
+    The goal of this function is to get 
+    all the values that are at the last 
+    level oof the binary tree, in the 
+    lowest leaf
+    
+    Arguments:
+        -node: The parent node from which 
+        the operation will beegin
+    Returns:
+        -bottom_values: List[int]: The list
+        of values of all lowest leaf nodes
+    """
+    
+    global bottom_values
+    if (node.left is None) and (node.right is None):
+        bottom_values.append(node.X.shape[0])
+    elif (node.left is None) and node.right:
+        get_bottom_values(node.right)
+    elif node.left and (node.right is None):
+        get_bottom_values(node.left)
+    else:
+        get_bottom_values(node.left)
+        get_bottom_values(node.right)
+    return bottom_values
+
 
 class Node:
     """
     The goal of this class is to compute a Node 
     with appropriate conditions for the construction
     of a decision Tree
+
+    Arguments:
+        -X: np.array: The feature values of the node
+        -y: np.array: The target values of the nodes
+
+    Returns:
+        None
     """
     def __init__(self, X: np.array, y: np.array) -> None:
         self.left=None
@@ -65,7 +102,6 @@ class Node:
                 =criterion_scores[score_couple_index][1], criterion_scores[score_couple_index][0]
         
         criterion_scores=[tuple(x) for x in criterion_scores]
-        print(criterion_scores)
         split_column=np.argmin([float(x[0]) for x in criterion_scores])
         if isinstance(criterion_scores[0], (float, int)):
             chosen_criteria=sorted(criterion_scores)[0]
@@ -116,29 +152,27 @@ class Node:
         vf = np.vectorize(self.condition)
         
         self.X=np.hstack((self.X, self.y))
-        print('split_column',self.split_column)
-        print("condition", self.split_value)
-        print(self.X[:, self.split_column])
         if self.condition==treshold_numeric:
             X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
-            X_right_node=self.X[~vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
+            X_right_node=self.X[~(vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value))]
             y_left_node=X_left_node[:, -1].reshape(-1, 1)
             y_right_node=X_right_node[:, -1].reshape(-1, 1)
             X_left_node=X_left_node[:, :-1]
             X_right_node=X_right_node[:, :-1]
+            
         else:
             X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
-            X_right_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
+            X_right_node=self.X[~(vf(self.X[:, self.split_column], reference_value=self.split_value))]
             y_left_node=X_left_node[:, -1].reshape(-1, 1)
             y_right_node=X_right_node[:, -1].reshape(-1, 1)
             X_left_node=X_left_node[:, :-1]
             X_right_node=X_right_node[:, :-1]
-
+        
+        self.X=self.X[:, :-1]
         self.X_left_node=X_left_node
         self.X_right_node=X_right_node
         self.y_left_node=y_left_node
-        self.y_right_node=y_right_node
-        
+        self.y_right_node=y_right_node  
 
 class Decision_Tree:
     """
@@ -159,7 +193,7 @@ class Decision_Tree:
         None
     """
 
-    def __init__(self, X: np.array, y: np.array, max_depth: int=4, 
+    def __init__(self, X: np.array, y: np.array, max_depth: int=10, 
     min_samples_split: int = 10) -> None:
         self.max_depth=max_depth
         self.min_samples_split=min_samples_split
@@ -185,21 +219,25 @@ class Decision_Tree:
     
         else:
     
-            # Compute the depth of each subtree
             lDepth = self.depth(node.left)
             rDepth = self.depth(node.right)
     
-            # Use the larger one
             if (lDepth > rDepth):
                 return lDepth+1
             else:
                 return rDepth+1
 
-    def grow_node(self, node):
+    def grow_node(self, node)->None:
         """
-        Le but de cette fonction est de passer 
-        d'un noeud simple à un noeud avec une feuille
-        gauche et une feuille droite
+        The goal of this this function is to
+        build an entire Decision Tree performing
+        recursion method 
+
+        Arguments:
+            -node
+
+        Returns:
+            None
         """
 
         if node.X.shape[0]>=self.min_samples_split and self.depth(self.node)<self.max_depth:
@@ -213,37 +251,4 @@ class Decision_Tree:
             if node.right.X.shape[0]>=self.min_samples_split:
                 self.grow_node(node.right)
 
-    def iterate(self, node)->None:
-        """
-        The goal of this function is, for a given node
-        of the Decision Tree, to build both left and right
-        nodes provided conditions are respected
-        
-        Arguments:
-            -node: 
-        Returns:
-            None
-        """
-        print("Node",node)
-        print("Right node", node.right)
-        print("Left node", node.left)
-        if node.X.shape[0]>=self.min_samples_split:
-            node.compute_condition()
-            node.get_data_subsets()
-
-            if node.left.X.shape[0]>=self.min_samples_split:
-
-                self.left=Node(node.X_left_node, node.y_left_node)
-                self.left.compute_condition()
-                self.left.get_data_subsets()
-                node.left=self.iterate(self.left)
-
-            if self.right.X.shape[0]>=self.min_samples_split:
-
-                self.right=Node(node.X_right_node, node.y_right_node)
-                self.right.compute_condition()
-                self.right.get_data_subsets()
-                node.right=self.iterate(self.right)
-
-
-           
+    
