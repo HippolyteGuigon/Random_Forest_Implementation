@@ -9,7 +9,7 @@ max_depth=main_params["model_hyperparameters"]["max_depth"]
 min_sample_split=main_params["model_hyperparameters"]["min_sample_split"]
 
 class RandomForest:
-    def __init__(self, random_state, max_depth: int=max_depth, 
+    def __init__(self, random_state=42, max_depth: int=max_depth, 
                  min_sample_split: int = min_sample_split, **kwargs) -> None:
         
         self.rng = check_random_state(random_state)
@@ -23,6 +23,10 @@ class RandomForest:
             elif hasattr(self, param):
                 pass
             else:
+                setattr(self, param, value)
+
+        for param, value in main_params["model_hyperparameters"].items():
+            if not hasattr(self, param):
                 setattr(self, param, value)
 
     def data_bootstrap(self, X: np.array, y: np.array):
