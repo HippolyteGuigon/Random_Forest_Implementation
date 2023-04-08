@@ -11,10 +11,22 @@ min_sample_split=main_params["model_hyperparameters"]["min_sample_split"]
 class RandomForest:
     def __init__(self, random_state, max_depth: int=max_depth, 
                  min_sample_split: int = min_sample_split, **kwargs) -> None:
+        
         self.rng = check_random_state(random_state)
-        self.X = self.rng.normal(size=(50, 50))
         self.max_depth=max_depth
         self.min_samples_split=min_sample_split
+
+        for param, value in kwargs.items():
+            if param not in main_params.keys():
+                raise AttributeError(f"The Random Forest model has\
+                                      no attribute {param}")
+            elif hasattr(self, param):
+                pass
+            else:
+                setattr(self, param, value)
+
+    def data_bootstrap(self, X: np.array, y: np.array):
+        pass
 
     def fit(self, X: np.array, y: np.array)->None:
         self.X=X
@@ -26,8 +38,7 @@ class RandomForest:
         if self.y.shape[1]>1:
             raise ValueError(f"The target dataset must only contain\
                               one column, it contains {self.y.shape[1]}")
-        assert self.X.shape[0]<=self.min_samples_split, f"The number of rows\
+        if self.X.shape[0]<=self.min_samples_split:
+            raise AssertionError(f"The number of rows\
             of X, {self.X.shape[0]} must be superior to min_sample_split\
-                 hyperparameter {self.min_samples_split}"
-        
-
+                 hyperparameter {self.min_samples_split}")
