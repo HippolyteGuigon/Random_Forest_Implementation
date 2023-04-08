@@ -1,0 +1,2 @@
+max_depth: 10
+min_sample_split: 20s

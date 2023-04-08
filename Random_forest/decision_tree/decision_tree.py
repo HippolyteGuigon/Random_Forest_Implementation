@@ -6,12 +6,19 @@ compute_gini_numerical, variance_reduction_numerical,\
 variance_reduction_categorical
 from Random_forest.decision_tree.array_functions import float_array_converter, treshold_numeric, \
 split_categorical, is_float
+from Random_forest.configs.confs import load_conf
 from sklearn.exceptions import NotFittedError
 from typing import List
 
 warnings.filterwarnings("ignore")
 
+main_params = load_conf("configs/main.yml", include=True)
+
+max_depth=main_params["model_hyperparameters"]["max_depth"]
+min_sample_split=main_params["model_hyperparameters"]["min_sample_split"]
+
 bottom_values=[]
+
 def get_bottom_values(node)->List[int]:
     """
     The goal of this function is to get 
@@ -193,8 +200,8 @@ class Decision_Tree:
         None
     """
 
-    def __init__(self, X: np.array, y: np.array, max_depth: int=10, 
-    min_samples_split: int = 10) -> None:
+    def __init__(self, X: np.array, y: np.array, max_depth: int=max_depth, 
+    min_samples_split: int = min_sample_split) -> None:
         self.max_depth=max_depth
         self.min_samples_split=min_samples_split
         self.X=X

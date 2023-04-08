@@ -1,1 +1,2 @@
 pytest_configs: !include pytest_configs.yml
+model_hyperparameters: !include model_hyperparameters.yml
