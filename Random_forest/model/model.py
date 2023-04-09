@@ -29,9 +29,27 @@ class RandomForest:
             if not hasattr(self, param):
                 setattr(self, param, value)
 
-    def data_bootstrap(self, X: np.array, y: np.array):
-        pass
+    def data_bootstrap(self, X: np.array, y: np.array)->np.array:
+        """
+        The goal of this function is to build a
+        bootstraped dataset from the original one
+        
+        Arguments:
+            -X: np.array: The original dataset
+            -y: np.array: The target column
+        Returns:
+            -bootstraped_data: np.array: The
+            bootstraped dataset
+        """
 
+        full_data=np.hstack((X,  y))
+        n=full_data.shape[0]
+        choosed_sample_index=np.random.choice(np.arange(0, n), size=(n, 1), replace=True)
+        full_data_bootstraped=full_data[choosed_sample_index.flatten(),:]
+        X_bootstraped,  y_bootstraped = full_data_bootstraped[:, :-1], full_data_bootstraped[:, -1]
+
+        return X_bootstraped, y_bootstraped.reshape(-1, 1)
+    
     def fit(self, X: np.array, y: np.array)->None:
         self.X=X
         self.y=y
@@ -46,3 +64,9 @@ class RandomForest:
             raise AssertionError(f"The number of rows\
             of X, {self.X.shape[0]} must be superior to min_sample_split\
                  hyperparameter {self.min_samples_split}")
+        
+        bootstraped_set=[self.data_bootstrap(self.X, self.y) for _ in range(0,self.n_estimators)]
+        model_set=[Decision_Tree(x[0], x[1]) for x in bootstraped_set]
+        model_set=[x.grow_node(x.node) for x in model_set]
+        
+        return model_set
