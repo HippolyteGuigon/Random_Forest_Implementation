@@ -65,6 +65,8 @@ class Node:
         self.right=None 
         self.X=X
         self.y=y
+        self.profondeur=0
+        self.data=None
 
     def compute_condition(self)->None:
         """
@@ -111,10 +113,11 @@ class Node:
         criterion_scores=[tuple(x) for x in criterion_scores]
         split_column=np.argmin([float(x[0]) for x in criterion_scores])
         if isinstance(criterion_scores[0], (float, int)):
-            chosen_criteria=sorted(criterion_scores)[0]
+            min_index=np.argmin(criterion_scores)
+            chosen_criteria=criterion_scores[min_index]
         else:
-            criterion_scores=sorted(criterion_scores, key=lambda x: x[0])
-            chosen_criteria=criterion_scores[0][1]
+            min_index=np.argmin([x[0] for x in criterion_scores])
+            chosen_criteria=criterion_scores[min_index][1]
         if isinstance(chosen_criteria, (float, int)):
             self.condition = staticmethod(treshold_numeric).__func__
         else:
@@ -208,32 +211,6 @@ class Decision_Tree:
         self.y=y
         self.node=Node(X, y)
 
-    def depth(self, node)->int:
-        """
-        The goal of this function is to
-        compute the depth of the Tree 
-        
-        Arguments:
-            None
-        
-        Returns:
-            -tree_depth: int: The computed 
-            depth of the binary tree
-        """
-        
-        if node is None:
-            return 0
-    
-        else:
-    
-            lDepth = self.depth(node.left)
-            rDepth = self.depth(node.right)
-    
-            if (lDepth > rDepth):
-                return lDepth+1
-            else:
-                return rDepth+1
-
     def grow_node(self, node)->None:
         """
         The goal of this this function is to
@@ -247,12 +224,15 @@ class Decision_Tree:
             None
         """
 
-        if node.X.shape[0]>=self.min_samples_split and self.depth(self.node)<self.max_depth:
+        if node.X.shape[0]>=self.min_samples_split and node.profondeur<self.max_depth:
             
             node.compute_condition()
             node.get_data_subsets()
             node.left=Node(node.X_left_node, node.y_left_node)
             node.right=Node(node.X_right_node, node.y_right_node)
+            node.left.profondeur=node.profondeur+1
+            node.right.profondeur=node.profondeur+1
+
             if node.left.X.shape[0]>=self.min_samples_split:
                 self.grow_node(node.left)
             if node.right.X.shape[0]>=self.min_samples_split:
