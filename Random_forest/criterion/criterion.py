@@ -1,5 +1,4 @@
 import numpy as np
-from numba import njit
 from typing import Tuple
 
 def gini_impurity_categorical(X: np.array, y: np.array)->tuple:

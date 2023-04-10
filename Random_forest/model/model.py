@@ -67,6 +67,7 @@ class RandomForest:
         
         bootstraped_set=[self.data_bootstrap(self.X, self.y) for _ in range(0,self.n_estimators)]
         model_set=[Decision_Tree(x[0], x[1]) for x in bootstraped_set]
-        model_set=[x.grow_node(x.node) for x in model_set]
+        for x in model_set:
+            x.grow_node(x.node)
         
         return model_set
