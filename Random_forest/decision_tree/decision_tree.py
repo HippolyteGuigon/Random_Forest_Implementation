@@ -113,10 +113,11 @@ class Node:
         criterion_scores=[tuple(x) for x in criterion_scores]
         split_column=np.argmin([float(x[0]) for x in criterion_scores])
         if isinstance(criterion_scores[0], (float, int)):
-            chosen_criteria=sorted(criterion_scores)[0]
+            min_index=np.argmin(criterion_scores)
+            chosen_criteria=criterion_scores[min_index]
         else:
-            criterion_scores=sorted(criterion_scores, key=lambda x: x[0])
-            chosen_criteria=criterion_scores[0][1]
+            min_index=np.argmin([x[0] for x in criterion_scores])
+            chosen_criteria=criterion_scores[min_index][1]
         if isinstance(chosen_criteria, (float, int)):
             self.condition = staticmethod(treshold_numeric).__func__
         else:

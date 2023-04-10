@@ -1,4 +1,5 @@
 import numpy as np
+from numba import njit
 from typing import Tuple
 
 def gini_impurity_categorical(X: np.array, y: np.array)->tuple:
@@ -16,17 +17,17 @@ def gini_impurity_categorical(X: np.array, y: np.array)->tuple:
         -gini: np.array: The gini impurity of the column related
         to the other 
     """
-    full_data=np.hstack((X, y))
     n=X.shape[0]
     gini=0
-    unique_target=np.unique(y, return_counts=False)
+    unique_value=np.unique(X)
+    unique_target=np.unique(y)
 
-    for value in np.unique(X, return_counts=False):
+    for value in unique_value:
         gini_impurity=1
-        X_filtered=full_data[full_data[:, 0]==value, :]
+        X_filtered=y[X==value]
         n_value=X_filtered.shape[0]
         for unique_subtarget in unique_target:
-            gini_impurity-=(X_filtered[X_filtered[:,1]==unique_subtarget].shape[0]/n_value)**2
+            gini_impurity-=(X_filtered[X_filtered==unique_subtarget].shape[0]/n_value)**2
 
         gini+=(n_value/n)*gini_impurity
     
@@ -49,13 +50,12 @@ def compute_gini_numerical(X: np.array, y: np.array)->tuple:
     """
 
     gini_values=np.array([])
-    unique_targets=np.unique(y, return_counts=False)
-    
+    unique_targets=np.unique(y)
     full_data=np.hstack((X, y))
     n=full_data.shape[0]
     full_data=full_data[full_data[:, 0].astype(float).argsort()]
     tresholds=np.array([(np.float(full_data[i, 0])+np.float(full_data[i+1, 0]))/2 for i in range(full_data.shape[0]-1)])
-    tresholds=np.unique(tresholds, return_counts=False)
+    tresholds=np.unique(tresholds)
     
     for treshold in tresholds:
         left_node=full_data[full_data[:, 0].astype(float)<treshold][:, 1]
@@ -65,8 +65,8 @@ def compute_gini_numerical(X: np.array, y: np.array)->tuple:
         impurity_right=1
         impurity_left=1
 
-        unique_target_left=np.unique(left_node,return_counts=False)
-        unique_target_right=np.unique(right_node,return_counts=False)
+        unique_target_left=np.unique(left_node)
+        unique_target_right=np.unique(right_node)
 
         for value_left, value_right in zip(unique_target_left, unique_target_right):
             impurity_right-=(right_node[right_node==value_right].shape[0]/n_right_node)**2
@@ -99,7 +99,7 @@ def variance_reduction_numerical(X: np.array, y: np.array)->Tuple[float, float]:
     n=len(full_data)
     full_data=full_data[full_data[:, 0].astype(float).argsort()]
     tresholds=np.array([(np.float(full_data[i, 0])+np.float(full_data[i+1, 0]))/2 for i in range(full_data.shape[0]-1)])
-    tresholds=np.unique(tresholds, return_counts=False)
+    tresholds=np.unique(tresholds)
 
     for treshold_candidate in tresholds:
         left_node=full_data[full_data[:, 0].astype(float)<treshold_candidate][:, 1].astype(float)
@@ -110,8 +110,8 @@ def variance_reduction_numerical(X: np.array, y: np.array)->Tuple[float, float]:
         if not np.isnan(total_variance):
             variance_candidates.append((total_variance, treshold_candidate))
 
-    variance_candidates=sorted(variance_candidates,key=lambda x: x[0])
-    best_candidate=variance_candidates[0]
+    min_index=np.argmin([x[0] for x in variance_candidates])
+    best_candidate=variance_candidates[min_index]
 
     return best_candidate
 
@@ -131,18 +131,18 @@ def variance_reduction_categorical(X: np.array, y: np.array)->tuple:
     """
 
     variance_candidates = []
-    split_candidate=np.unique(X, return_counts=False)
-    full_data=np.hstack((X, y))
+    split_candidate=np.unique(X)
+    n=X.shape[0]
+
     for candidate in split_candidate:
-        first_subset=full_data[full_data[:, 0]==candidate, -1].astype(float)
-        second_subset=full_data[full_data[:,0]!=candidate, -1].astype(float)
-        n=full_data.shape[0]
+        first_subset=y[X==candidate].astype(float)
+        second_subset=y[X!=candidate].astype(float)
         n_first_subset=len(first_subset)
         n_second_subset=len(second_subset)
         total_variance = (n_first_subset/n)*np.var(first_subset)+(n_second_subset/n)*np.var(second_subset)
         variance_candidates.append((candidate, total_variance))
-    variance_candidates=sorted(variance_candidates,key=lambda x: x[1])
-    best_candidate=variance_candidates[0]
+    min_index=np.argmin([x[1] for x in variance_candidates])
+    best_candidate=variance_candidates[min_index]
     best_candidate=best_candidate[::-1]
     return best_candidate
 
@@ -164,9 +164,8 @@ def full_gini_compute(X: np.array, y: np.array)->tuple:
     """
 
     full_gini_impurities=[(col, gini_impurity_categorical(X[:, col].reshape(-1, 1), y)) for col in range(X.shape[1])]
-    print("full_gini_impuriity", full_gini_impurities)
-    split_pair = sorted(full_gini_impurities, key=lambda x: x[1])[0]
-    return split_pair[0], split_pair[1]
+    min_index=np.argmin([x[1] for x in full_gini_impurities])
+    return full_gini_impurities[min_index][0], full_gini_impurities[min_index][1]
 
 def full_variance_reduction_compute(X: np.array, y: np.array)->tuple:
     """
@@ -183,8 +182,8 @@ def full_variance_reduction_compute(X: np.array, y: np.array)->tuple:
     """ 
 
     best_candidates=[(col, variance_reduction_categorical(X[:, col].reshape(-1, 1), y)) for col in range(X.shape[1])]
-    best_candidates=sorted(best_candidates, key=lambda x: x[1][1])
-    best_split_col=best_candidates[0]
+    min_index=np.argmin([x[1][1] for x in best_candidates])
+    best_split_col=best_candidates[min_index]
 
     return best_split_col
 
