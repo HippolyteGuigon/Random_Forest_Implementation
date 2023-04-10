@@ -108,10 +108,10 @@ def variance_reduction_numerical(X: np.array, y: np.array)->Tuple[float, float]:
         total_variance = (n_left_node/n)*np.var(left_node)+(n_right_node/n)*np.var(right_node)
         if not np.isnan(total_variance):
             variance_candidates.append((total_variance, treshold_candidate))
-
+        else:
+            variance_candidates.append((np.inf, np.inf))
     min_index=np.argmin([x[0] for x in variance_candidates])
     best_candidate=variance_candidates[min_index]
-
     return best_candidate
 
 def variance_reduction_categorical(X: np.array, y: np.array)->tuple:
