@@ -66,7 +66,7 @@ class Node:
         self.X=X
         self.y=y
         self.profondeur=0
-        self.data=None
+        self.data=[]
 
     def compute_condition(self)->None:
         """
