@@ -31,7 +31,13 @@ def split_categorical(data: str, reference_value: str)->bool:
     """
     return data==reference_value
 
-def is_float(x):
+def is_float(x)->bool:
+    """
+    The goal of this function is
+    to determine wheter a column of
+    a given array is float type or 
+    not
+    """
     try:
         x=float(x)
         return True

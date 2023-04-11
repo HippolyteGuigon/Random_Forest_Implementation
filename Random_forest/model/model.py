@@ -2,6 +2,7 @@ import numpy as np
 import sys
 from sklearn.utils import check_random_state
 from Random_forest.decision_tree.decision_tree import Decision_Tree
+from Random_forest.decision_tree.array_functions import is_float
 from Random_forest.configs.confs import load_conf
 
 main_params=load_conf("configs/main.yml", include=True)
@@ -20,8 +21,6 @@ class RandomForest:
             if param not in main_params.keys():
                 raise AttributeError(f"The Random Forest model has\
                                       no attribute {param}")
-            elif hasattr(self, param):
-                pass
             else:
                 setattr(self, param, value)
 
@@ -51,6 +50,20 @@ class RandomForest:
         return X_bootstraped, y_bootstraped.reshape(-1, 1)
     
     def fit(self, X: np.array, y: np.array)->None:
+        """
+        The goal  of this function is to fit the
+        model, build a forest of Decision Trees
+        that will be used afterwhise for the prediction 
+        of new values
+        
+        Arguments: 
+            -X: np.array: The array of values on which 
+            the model will be fitted 
+            -y: np.array: The target column
+        Returns:
+            -None
+        """
+        
         self.X=X
         self.y=y
 
@@ -67,7 +80,71 @@ class RandomForest:
         
         bootstraped_set=[self.data_bootstrap(self.X, self.y) for _ in range(0,self.n_estimators)]
         model_set=[Decision_Tree(x[0], x[1]) for x in bootstraped_set]
+        
         for x in model_set:
             x.grow_node(x.node)
         
-        return model_set
+        self.model_set=model_set
+
+    def to_predict_data_allocation(self, data: np.array, node)->np.array:
+        """
+        The goal of this function is to 
+        allocate the data to be predicted
+        in a given decision tree in order
+        to make a prediction after 
+        
+        Arguments: 
+        -data: The data to be allocated 
+        -node: The node in which the data
+        will be splitted
+        
+        Returns: 
+            -None
+        """
+
+        if node.left or node.right:
+            if is_float(data[node.split_column]):
+                if node.check_condition(data[node.split_column].astype(float)):
+                    self.to_predict_data_allocation(data, node.left)
+                else:
+                    self.to_predict_data_allocation(data, node.right)    
+            else:
+                if node.check_condition(data[node.split_column]):
+                    self.to_predict_data_allocation(data, node.left)
+                else:
+                    self.to_predict_data_allocation(data, node.right)  
+            
+        if is_float(node.y[0]):
+            return np.mean(node.y.astype(float))
+        else:
+            values, counts = np.unique(node.y, return_counts=True)
+            return values[counts.argmax()]
+    
+    def predict(self, X_to_predict: np.array)->np.array:
+        """
+        The goal of this function is to
+        return the predictions made for
+        a given array
+        
+        Arguments:
+            -X_to_predict: np.array: The
+            array of values to be predicted
+        Returns:
+            -predictions: np.array: The predictions
+            made for a given array
+        """
+
+        if not hasattr(self, "model_set"):
+            raise AssertionError("The model needs to be fitted\
+                                 first before predicting")
+        
+        predictions=[]
+        for value in X_to_predict:
+            for decision_tree in self.model_set:
+                predictions.append(self.to_predict_data_allocation(value,decision_tree.node))
+
+        if isinstance(predictions[0], (float, int)):
+            return np.mean(predictions)
+        else:
+            values, counts = np.unique(predictions, return_counts=True)
+            return values[counts.argmax()] 
