@@ -10,6 +10,22 @@ max_depth=main_params["model_hyperparameters"]["max_depth"]
 min_sample_split=main_params["model_hyperparameters"]["min_sample_split"]
 
 class RandomForest:
+    """
+    The goal of this class is the 
+    implementation of the final model
+    
+    Arguments:
+        -random_state: int: The random_state
+        used for data generation
+        -max_depth: int: The maximum depth of
+        each decision Tree composing the forest
+        -min_sample_split: The minimum number of 
+        samples required for having a split in the
+        Node
+        
+    Returns:
+        -None
+    """
     def __init__(self, random_state=42, max_depth: int=max_depth, 
                  min_sample_split: int = min_sample_split, **kwargs) -> None:
         
@@ -43,10 +59,9 @@ class RandomForest:
 
         full_data=np.hstack((X,  y))
         n=full_data.shape[0]
-        choosed_sample_index=np.random.choice(np.arange(0, n), size=(n, 1), replace=True)
-        full_data_bootstraped=full_data[choosed_sample_index.flatten(),:]
+        choosed_sample_index=sorted(np.random.choice(np.arange(0, n), size=(n, 1)).flatten())
+        full_data_bootstraped=full_data[choosed_sample_index,:]
         X_bootstraped,  y_bootstraped = full_data_bootstraped[:, :-1], full_data_bootstraped[:, -1]
-
         return X_bootstraped, y_bootstraped.reshape(-1, 1)
     
     def fit(self, X: np.array, y: np.array)->None:
@@ -79,6 +94,7 @@ class RandomForest:
                  hyperparameter {self.min_samples_split}")
         
         bootstraped_set=[self.data_bootstrap(self.X, self.y) for _ in range(0,self.n_estimators)]
+        self.bootstraped_set=bootstraped_set
         model_set=[Decision_Tree(x[0], x[1]) for x in bootstraped_set]
         
         for x in model_set:
@@ -86,7 +102,7 @@ class RandomForest:
         
         self.model_set=model_set
 
-    def to_predict_data_allocation(self, data: np.array, node)->np.array:
+    def to_predict_data_allocation(self, data: np.array, node)->float:
         """
         The goal of this function is to 
         allocate the data to be predicted
@@ -99,7 +115,7 @@ class RandomForest:
         will be splitted
         
         Returns: 
-            -None
+            -decision: The outcome of the tree
         """
 
         if node.left or node.right:
@@ -115,12 +131,13 @@ class RandomForest:
                     self.to_predict_data_allocation(data, node.right)  
             
         if is_float(node.y[0]):
-            return np.mean(node.y.astype(float))
+            decision= np.mean(node.y.astype(float))
         else:
             values, counts = np.unique(node.y, return_counts=True)
-            return values[counts.argmax()]
+            decision= values[counts.argmax()]
+        return decision
     
-    def predict(self, X_to_predict: np.array)->np.array:
+    def individual_predict(self, X_to_predict: np.array)->float:
         """
         The goal of this function is to
         return the predictions made for
@@ -133,18 +150,38 @@ class RandomForest:
             -predictions: np.array: The predictions
             made for a given array
         """
+        
+        predictions=[]
+
+        for decision_tree in self.model_set:
+            print("Iciiiii",X_to_predict,self.to_predict_data_allocation(X_to_predict,decision_tree.node))
+            predictions.append(self.to_predict_data_allocation(X_to_predict,decision_tree.node))
+        if isinstance(predictions[0], (float, int)):
+            prediction= np.mean(predictions)
+        else:
+            values, counts = np.unique(predictions, return_counts=True)
+            prediction= values[counts.argmax()] 
+        return prediction
+    
+    def predict(self, X:np.array)->np.array:
+        """
+        The goal of this function is to
+        predict a all array
+        
+        Arguments:
+            -X: np.array: The array to be
+            predicted
+        
+        Returns:
+            -predicted: np.array: The prediction
+            made by the model
+        """
 
         if not hasattr(self, "model_set"):
             raise AssertionError("The model needs to be fitted\
                                  first before predicting")
-        
-        predictions=[]
-        for value in X_to_predict:
-            for decision_tree in self.model_set:
-                predictions.append(self.to_predict_data_allocation(value,decision_tree.node))
+        predicted=[]
+        for x in X:
+            predicted.append(self.individual_predict(x))
 
-        if isinstance(predictions[0], (float, int)):
-            return np.mean(predictions)
-        else:
-            values, counts = np.unique(predictions, return_counts=True)
-            return values[counts.argmax()] 
+        return predicted
