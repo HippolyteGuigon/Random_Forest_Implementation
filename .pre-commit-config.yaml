@@ -9,3 +9,11 @@ repos:
     rev: 22.10.0
     hooks:
     -   id: black
+-   repo: https://github.com/pycqa/flake8
+    rev: ''  # pick a git hash / tag to point to
+    hooks:
+    -   id: flake8
+        args: # arguments to configure flake8
+            # making isort line length compatible with black
+            - "--max-line-length=88"
+            - "--ignore=W503,E402,E722,F403,F405, E302"
