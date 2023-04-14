@@ -4,7 +4,7 @@ import warnings
 from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute,\
 variance_reduction_categorical, variance_reduction_numerical
 from Random_forest.decision_tree.decision_tree import Node, Decision_Tree, get_bottom_values
-from Random_forest.decision_tree.array_functions import get_random_set
+from Random_forest.decision_tree.array_functions import get_random_set, is_float
 from Random_forest.configs.confs import load_conf
 from Random_forest.model.model import RandomForest
 
@@ -141,14 +141,23 @@ class Test(unittest.TestCase):
         X, y = get_random_set(row_size_test_dataset=row_size_test_dataset, objective="classification")
         X_predict, _ =get_random_set(row_size_test_dataset=30, objective="classification")
 
-        model=RandomForest()
-        model.fit(X,y)
+        model_classification=RandomForest()
+        model_classification.fit(X,y)
 
-        predictions=model.predict(X_predict)
-        predictions=[x in y for x in predictions]
+        classification_predictions=model_classification.predict(X_predict)
+        classification_predictions=[x in y for x in classification_predictions]
         
-        self.assertTrue(np.all(predictions))
+        X, y = get_random_set(row_size_test_dataset=row_size_test_dataset, objective="regression")
+        X_predict, _ =get_random_set(row_size_test_dataset=30, objective="regression")
         
+        model_regression=RandomForest()
+        model_regression.fit(X,y)
+
+        regression_predictions=model_regression.predict(X_predict)
+        regression_predictions=[is_float(x) for x in regression_predictions]
+        
+        self.assertTrue(np.all(classification_predictions))
+        self.assertTrue(np.all(regression_predictions))
 
         
 
