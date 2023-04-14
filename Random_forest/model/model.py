@@ -59,7 +59,7 @@ class RandomForest:
 
         full_data=np.hstack((X,  y))
         n=full_data.shape[0]
-        choosed_sample_index=sorted(np.random.choice(np.arange(0, n), size=(n, 1)).flatten())
+        choosed_sample_index=sorted(np.random.choice(np.arange(0, n), size=n))
         full_data_bootstraped=full_data[choosed_sample_index,:]
         X_bootstraped,  y_bootstraped = full_data_bootstraped[:, :-1], full_data_bootstraped[:, -1]
         return X_bootstraped, y_bootstraped.reshape(-1, 1)
@@ -94,7 +94,6 @@ class RandomForest:
                  hyperparameter {self.min_samples_split}")
         
         bootstraped_set=[self.data_bootstrap(self.X, self.y) for _ in range(0,self.n_estimators)]
-        self.bootstraped_set=bootstraped_set
         model_set=[Decision_Tree(x[0], x[1]) for x in bootstraped_set]
         
         for x in model_set:
@@ -118,24 +117,25 @@ class RandomForest:
             -decision: The outcome of the tree
         """
 
+        self.current_node=node
         if node.left or node.right:
             if is_float(data[node.split_column]):
                 if node.check_condition(data[node.split_column].astype(float)):
-                    self.to_predict_data_allocation(data, node.left)
+                    self.to_predict_data_allocation(data, self.current_node.left)
                 else:
-                    self.to_predict_data_allocation(data, node.right)    
+                    self.to_predict_data_allocation(data, self.current_node.right) 
             else:
                 if node.check_condition(data[node.split_column]):
-                    self.to_predict_data_allocation(data, node.left)
+                    self.to_predict_data_allocation(data, self.current_node.left)
                 else:
-                    self.to_predict_data_allocation(data, node.right)  
+                    self.to_predict_data_allocation(data, self.current_node.right)  
             
-        if is_float(node.y[0]):
-            decision= np.mean(node.y.astype(float))
-        else:
-            values, counts = np.unique(node.y, return_counts=True)
-            decision= values[counts.argmax()]
-        return decision
+            self.current_node.y=self.current_node.y.flatten()
+            if is_float(self.current_node.y[0]):
+                return np.mean(self.current_node.y.astype(float))
+            else:
+                values, counts = np.unique(self.current_node.y, return_counts=True)
+                return values[counts.argmax()]
     
     def individual_predict(self, X_to_predict: np.array)->float:
         """
@@ -154,7 +154,6 @@ class RandomForest:
         predictions=[]
 
         for decision_tree in self.model_set:
-            print("Iciiiii",X_to_predict,self.to_predict_data_allocation(X_to_predict,decision_tree.node))
             predictions.append(self.to_predict_data_allocation(X_to_predict,decision_tree.node))
         if isinstance(predictions[0], (float, int)):
             prediction= np.mean(predictions)

@@ -161,24 +161,18 @@ class Node:
         
         vf = np.vectorize(self.condition)
         
-        self.X=np.hstack((self.X, self.y))
         if self.condition==treshold_numeric:
             X_left_node=self.X[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)]
             X_right_node=self.X[~(vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value))]
-            y_left_node=X_left_node[:, -1].reshape(-1, 1)
-            y_right_node=X_right_node[:, -1].reshape(-1, 1)
-            X_left_node=X_left_node[:, :-1]
-            X_right_node=X_right_node[:, :-1]
+            y_left_node=self.y[vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value)].reshape(-1,1)
+            y_right_node=self.y[~(vf(self.X[:, self.split_column].astype(float), reference_value=self.split_value))].reshape(-1,1)
             
         else:
             X_left_node=self.X[vf(self.X[:, self.split_column], reference_value=self.split_value)]
             X_right_node=self.X[~(vf(self.X[:, self.split_column], reference_value=self.split_value))]
-            y_left_node=X_left_node[:, -1].reshape(-1, 1)
-            y_right_node=X_right_node[:, -1].reshape(-1, 1)
-            X_left_node=X_left_node[:, :-1]
-            X_right_node=X_right_node[:, :-1]
+            y_left_node=self.y[vf(self.X[:, self.split_column], reference_value=self.split_value)].reshape(-1,1)
+            y_right_node=self.y[~(vf(self.X[:, self.split_column], reference_value=self.split_value))].reshape(-1,1)
         
-        self.X=self.X[:, :-1]
         self.X_left_node=X_left_node
         self.X_right_node=X_right_node
         self.y_left_node=y_left_node
@@ -224,7 +218,7 @@ class Decision_Tree:
             None
         """
 
-        if node.X.shape[0]>=self.min_samples_split and node.profondeur<self.max_depth:
+        if (node.X.shape[0]>=self.min_samples_split) and (node.profondeur<self.max_depth):
             
             node.compute_condition()
             node.get_data_subsets()
