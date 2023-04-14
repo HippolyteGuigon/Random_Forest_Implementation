@@ -22,7 +22,7 @@ jobs:
           command: |
             pip install --upgrade pip
             pip install -r requirements.txt 
-            python test_unittest.py
+            python test_unnitest.py
 workflows:
   build_and_test:
     jobs:
