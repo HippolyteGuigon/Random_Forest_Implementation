@@ -4,8 +4,11 @@ import warnings
 from Random_forest.criterion.criterion import gini_impurity_categorical, full_gini_compute,\
 variance_reduction_categorical, variance_reduction_numerical
 from Random_forest.decision_tree.decision_tree import Node, Decision_Tree, get_bottom_values
-warnings.filterwarnings("ignore")
+from Random_forest.decision_tree.array_functions import get_random_set
 from Random_forest.configs.confs import load_conf
+from Random_forest.model.model import RandomForest
+
+warnings.filterwarnings("ignore")
 
 main_params = load_conf("configs/main.yml", include=True)
 row_size_test_dataset=main_params["pytest_configs"]["row_size_test_dataset"]
@@ -112,27 +115,42 @@ class Test(unittest.TestCase):
         Returns:
             None
         """
-        categorical_value_1=["retraités", "actifs", "étudiant"]
-        categorical_value_2=["a", "b", "c", "d", "e"]
 
-        X_numeric_normal=np.random.normal(scale=row_size_test_dataset, size=(row_size_test_dataset, 1))
-        X_numeric_geometric=np.random.geometric(p=0.1,size=(row_size_test_dataset,1))
-        X_numeric_poisson=np.random.poisson(size=(row_size_test_dataset,1))
-        X_numeric=np.hstack((X_numeric_normal,X_numeric_geometric,X_numeric_poisson))
-
-        X_categorical_1=np.random.choice(categorical_value_1, size=(row_size_test_dataset,1))
-        X_categorical_2=np.random.choice(categorical_value_2, size=(row_size_test_dataset,1))
-        X_categorical=np.hstack((X_categorical_1,X_categorical_2))
-
-        X=np.hstack((X_categorical,X_numeric))
-        y=np.random.exponential(size=(row_size_test_dataset,1))
-
+        X, y = get_random_set(row_size_test_dataset=row_size_test_dataset, objective="regression")
+    
         Tree=Decision_Tree(X, y)
         Tree.grow_node(Tree.node)
         bottom_values=get_bottom_values(Tree.node)
         bottom_sum=np.sum(bottom_values)
 
         self.assertEqual(bottom_sum, row_size_test_dataset)
+
+    def test_model_prediction(self):
+        """
+        The goal of this function is 
+        to check if the model can deliver
+        accuracte predictions, both for 
+        classification and regression
+        
+        Arguments:
+            None
+        Returns:
+            None
+        """
+
+        X, y = get_random_set(row_size_test_dataset=row_size_test_dataset, objective="classification")
+        X_predict, _ =get_random_set(row_size_test_dataset=30, objective="classification")
+
+        model=RandomForest()
+        model.fit(X,y)
+
+        predictions=model.predict(X_predict)
+        predictions=[x in y for x in predictions]
+        
+        self.assertTrue(np.all(predictions))
+        
+
+        
 
 if __name__ == "__main__":
     unittest.main()
