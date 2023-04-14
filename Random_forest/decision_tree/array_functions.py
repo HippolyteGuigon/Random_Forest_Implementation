@@ -56,3 +56,26 @@ def float_array_converter(arr: np.array)->np.array:
         convertArr.append(value)
 
     return np.array(convertArr,dtype=object).reshape(arr.shape)
+
+def get_random_set(row_size_test_dataset, objective="classification")->np.array:
+        categorical_value_1=["retraités", "actifs", "étudiant"]
+        categorical_value_2=["a", "b", "c", "d", "e"]
+
+        X_numeric_normal=np.random.normal(scale=30, size=(row_size_test_dataset, 1))
+        X_numeric_geometric=np.random.geometric(p=0.1,size=(row_size_test_dataset,1))
+        X_numeric_poisson=np.random.poisson(size=(row_size_test_dataset,1))
+        X_numeric=np.hstack((X_numeric_normal,X_numeric_geometric,X_numeric_poisson))
+
+        X_categorical_1=np.random.choice(categorical_value_1, size=(row_size_test_dataset,1))
+        X_categorical_2=np.random.choice(categorical_value_2, size=(row_size_test_dataset,1))
+        X_categorical=np.hstack((X_categorical_1,X_categorical_2))
+
+        X=np.hstack((X_categorical,X_numeric))
+
+        if objective=="classification":
+            target_value=["target_1", "target_2", "target_3"]
+            y=np.random.choice(target_value,size=(row_size_test_dataset,1))
+        else:
+            y=np.random.normal(scale=30, size=(row_size_test_dataset, 1))
+
+        return X, y
