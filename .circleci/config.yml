@@ -11,7 +11,7 @@ jobs:
           command: |
             pip install --upgrade pip  
             pip install -r requirements.txt 
-            python test_unnittest.py
+            python test_unnitest.py
   test:
     working_directory: ~/circleci-python
     docker:
