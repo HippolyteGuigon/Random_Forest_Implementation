@@ -30,3 +30,11 @@ The all project is coded under PEP-8 (https://peps.python.org/pep-0008/) and fla
 Image of a Random Forest decision process
 
 ## How to use ?
+
+1. To import the model, run the following command: ```from Random_forest.model.model import RandomForest```
+
+2. Then, use ```model=RandomForest()``` and adjust hyperparameters according to your goals
+
+3. Run ```model.fit(X, y)```
+
+4. Predict your data with ```model.predict(X_to_predict)```
