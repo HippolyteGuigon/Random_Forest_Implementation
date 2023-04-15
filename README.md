@@ -14,6 +14,13 @@ The all project is coded under PEP-8 (https://peps.python.org/pep-0008/) and fla
 
 ## Installation
 
+* This project uses a specific conda environment, to get it, run the following command: ```conda env create -f random_forest_env.yml```
+
+* To install all necessary libraries, run the following code:```pip install -r requirements.txt```
+
+* This project has its own package that is used. To get it, run the following command: ```python install setup.py```
+
+
 ## Screenshot 
 
 ![alt text](https://github.com/HippolyteGuigon/Random_Forest_Implementation/blob/main/ressources/random_forest.png)

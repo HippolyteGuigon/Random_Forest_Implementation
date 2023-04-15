@@ -1,0 +1,7 @@
+name: random_forest_implementation
+channels:
+  - anaconda
+  - defaults
+dependencies:
+  - yaml=0.2.5=haf1e3a3_0
+prefix: /Applications/anaconda3/envs/random_forest_implementation
