@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 import warnings
+import logging
 from Random_forest.criterion.criterion import (
     gini_impurity_categorical,
     full_gini_compute,
@@ -15,11 +16,16 @@ from Random_forest.decision_tree.decision_tree import (
 from Random_forest.decision_tree.array_functions import get_random_set, is_float
 from Random_forest.configs.confs import load_conf
 from Random_forest.model.model import RandomForest
+from Random_forest.logs.logs import main
 
 warnings.filterwarnings("ignore")
 
 main_params = load_conf("configs/main.yml", include=True)
 row_size_test_dataset = main_params["pytest_configs"]["row_size_test_dataset"]
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
 
 
 class Test(unittest.TestCase):
@@ -27,6 +33,8 @@ class Test(unittest.TestCase):
     The goal of this class is to implement unnitest
     and check everything commited makes sense
     """
+
+    logging.info("Performing unitest")
 
     def test_categorical_gini_criterion(self) -> None:
         """
@@ -189,4 +197,5 @@ class Test(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    main()
     unittest.main()
