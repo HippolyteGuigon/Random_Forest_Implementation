@@ -164,6 +164,8 @@ def full_gini_compute(X: np.array, y: np.array)->tuple:
 
     full_gini_impurities=[(col, gini_impurity_categorical(X[:, col].reshape(-1, 1), y)) for col in range(X.shape[1])]
     min_index=np.argmin([x[1] for x in full_gini_impurities])
+    print("min_index",min_index)
+    print("fgi",full_gini_impurities)
     return full_gini_impurities[min_index][0], full_gini_impurities[min_index][1]
 
 def full_variance_reduction_compute(X: np.array, y: np.array)->tuple:
