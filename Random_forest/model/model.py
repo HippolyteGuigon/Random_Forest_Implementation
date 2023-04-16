@@ -3,6 +3,8 @@ from sklearn.utils import check_random_state
 from Random_forest.decision_tree.decision_tree import Decision_Tree
 from Random_forest.decision_tree.array_functions import is_float
 from Random_forest.configs.confs import load_conf
+from joblib import Parallel, delayed
+from multiprocessing import cpu_count
 
 main_params = load_conf("configs/main.yml", include=True)
 max_depth = main_params["model_hyperparameters"]["max_depth"]
@@ -32,11 +34,13 @@ class RandomForest:
         objective="regression",
         random_state=42,
         max_depth: int = max_depth,
+        n_estimators=100,
         min_sample_split: int = min_sample_split,
         **kwargs,
     ) -> None:
         self.rng = check_random_state(random_state)
         self.max_depth = max_depth
+        self.n_estimators = n_estimators
         self.min_samples_split = min_sample_split
         self.objective = objective
 
@@ -131,14 +135,17 @@ class RandomForest:
                         must be categorical for classification"
             )
 
-        bootstraped_set = [
-            self.data_bootstrap(self.X, self.y) for _ in range(0, self.n_estimators)
-        ]
-        model_set = [Decision_Tree(x[0], x[1]) for x in bootstraped_set]
+        bootstraped_set = Parallel(n_jobs=int(cpu_count()))(
+            delayed(self.data_bootstrap)(self.X, self.y)
+            for _ in range(0, self.n_estimators)
+        )
+        model_set = Parallel(n_jobs=int(cpu_count()))(
+            delayed(Decision_Tree)(x[0], x[1]) for x in bootstraped_set
+        )
 
-        for x in model_set:
-            x.grow_node(x.node)
-
+        Parallel(n_jobs=int(cpu_count()))(
+            delayed(x.grow_node)(x.node) for x in model_set
+        )
         self.model_set = model_set
 
     def to_predict_data_allocation(self, data: np.array, node) -> float:
