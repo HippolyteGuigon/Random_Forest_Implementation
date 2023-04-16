@@ -175,7 +175,7 @@ class Test(unittest.TestCase):
             row_size_test_dataset=30, objective="classification"
         )
 
-        model_classification = RandomForest()
+        model_classification = RandomForest(objective="classification")
         model_classification.fit(X, y)
 
         classification_predictions = model_classification.predict(X_predict)
@@ -186,7 +186,7 @@ class Test(unittest.TestCase):
         )
         X_predict, _ = get_random_set(row_size_test_dataset=30, objective="regression")
 
-        model_regression = RandomForest()
+        model_regression = RandomForest(objective="regression")
         model_regression.fit(X, y)
 
         regression_predictions = model_regression.predict(X_predict)
