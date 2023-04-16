@@ -177,6 +177,18 @@ class RandomForest:
                 values, counts = np.unique(self.current_node.y, return_counts=True)
                 return values[counts.argmax()]
 
+    def get_out_of_bag_dataset(
+        self, X: np.array, bootstraped_dataset: np.array
+    ) -> np.array:
+        """
+        The goal of this function is to
+        get the elements that were not
+        chosen for the construction of
+        the tree"""
+
+        out_of_bag = X[~np.isin(X, bootstraped_dataset)].reshape(-1, X.shape[1])
+        return out_of_bag
+
     def individual_predict(self, X_to_predict: np.array) -> float:
         """
         The goal of this function is to
