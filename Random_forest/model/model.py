@@ -211,11 +211,13 @@ class RandomForest:
             made for a given array
         """
 
-        predictions = Parallel(n_jobs=int(cpu_count()))(
-            delayed(self.to_predict_data_allocation)(X_to_predict, decision_tree.node)
-            for decision_tree in self.model_set
-        )
+        predictions = []
 
+        for decision_tree in self.model_set:
+            predictions.append(
+                self.to_predict_data_allocation(X_to_predict, decision_tree.node)
+            )
+            
         if isinstance(predictions[0], (float, int)):
             prediction = np.mean(predictions)
         else:
