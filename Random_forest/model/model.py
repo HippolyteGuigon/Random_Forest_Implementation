@@ -143,9 +143,10 @@ class RandomForest:
             delayed(Decision_Tree)(x[0], x[1]) for x in bootstraped_set
         )
 
-        Parallel(n_jobs=int(cpu_count()))(
+        model_set = Parallel(n_jobs=int(cpu_count()))(
             delayed(x.grow_node)(x.node) for x in model_set
         )
+
         self.model_set = model_set
 
     def to_predict_data_allocation(self, data: np.array, node) -> float:
@@ -210,12 +211,11 @@ class RandomForest:
             made for a given array
         """
 
-        predictions = []
+        predictions = Parallel(n_jobs=int(cpu_count()))(
+            delayed(self.to_predict_data_allocation)(X_to_predict, decision_tree.node)
+            for decision_tree in self.model_set
+        )
 
-        for decision_tree in self.model_set:
-            predictions.append(
-                self.to_predict_data_allocation(X_to_predict, decision_tree.node)
-            )
         if isinstance(predictions[0], (float, int)):
             prediction = np.mean(predictions)
         else:
