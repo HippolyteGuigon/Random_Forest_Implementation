@@ -84,6 +84,10 @@ class RandomForest:
             full_data_bootstraped[:, :-1],
             full_data_bootstraped[:, -1],
         )
+
+        #out_of_bag_computed=self.get_out_of_bag_dataset(self.X, X_bootstraped)
+        #self.out_of_bag_values=out_of_bag_computed
+
         return X_bootstraped, y_bootstraped.reshape(-1, 1)
 
     def fit(self, X: np.array, y: np.array) -> None:
@@ -103,7 +107,7 @@ class RandomForest:
 
         self.X = X
         self.y = y
-
+        
         if self.X.shape[0] != self.y.shape[0]:
             raise ValueError(
                 f"X and y must have the same number of rows, X\
@@ -135,10 +139,16 @@ class RandomForest:
                         must be categorical for classification"
             )
 
+        
         bootstraped_set = Parallel(n_jobs=int(cpu_count()))(
             delayed(self.data_bootstrap)(self.X, self.y)
             for _ in range(0, self.n_estimators)
         )
+        
+        self.out_of_bag_values=np.vstack((dataset[0] for dataset in bootstraped_set))
+        self.out_of_bag_values=np.unique(self.out_of_bag_values,axis=0)
+        self.out_of_bag_values=[x for x in self.X.tolist() if x not in self.out_of_bag_values.tolist()]
+
         model_set = Parallel(n_jobs=int(cpu_count()))(
             delayed(Decision_Tree)(x[0], x[1]) for x in bootstraped_set
         )
@@ -192,9 +202,20 @@ class RandomForest:
         The goal of this function is to
         get the elements that were not
         chosen for the construction of
-        the tree"""
-
-        out_of_bag = X[~np.isin(X, bootstraped_dataset)].reshape(-1, X.shape[1])
+        the tree
+        
+        Arguments:
+            -X: np.array: The original
+            dataset
+            -bootstraped_dataset: np.array:
+            The dataset constructed with 
+            bootstrapping
+        Returns:
+            -out_of_bag: np.array: The data
+            in the X array that are not in the
+            boostraped dataset
+        """
+        out_of_bag = np.array([x for x in X.tolist() if x not in bootstraped_dataset.tolist()])
         return out_of_bag
 
     def individual_predict(self, X_to_predict: np.array) -> float:
