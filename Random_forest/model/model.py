@@ -36,18 +36,26 @@ class RandomForest:
         max_depth: int = max_depth,
         n_estimators=100,
         min_sample_split: int = min_sample_split,
+        max_features: str = "sqrt",
         **kwargs,
     ) -> None:
         self.rng = check_random_state(random_state)
         self.max_depth = max_depth
         self.n_estimators = n_estimators
         self.min_samples_split = min_sample_split
+        self.max_features = max_features
         self.objective = objective
 
         if self.objective not in ["classification", "regression"]:
             raise ValueError(
                 f"The objective of the Random Forest is classification\
                               or regression got the argument {self.objective}"
+            )
+
+        if self.max_features not in ["sqrt", "log2", None]:
+            raise ValueError(
+                f"The max_features hyperparameter must be sqrt, log2 or None but got\
+                             the hyperparameter {self.max_features}"
             )
 
         for param, value in kwargs.items():
@@ -155,7 +163,8 @@ class RandomForest:
             )
 
         model_set = Parallel(n_jobs=int(cpu_count()))(
-            delayed(Decision_Tree)(x[0], x[1]) for x in bootstraped_set
+            delayed(Decision_Tree)(x[0], x[1], max_features=self.max_features)
+            for x in bootstraped_set
         )
 
         model_set = Parallel(n_jobs=int(cpu_count()))(
