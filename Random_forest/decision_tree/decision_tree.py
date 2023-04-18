@@ -103,6 +103,7 @@ class Node:
         chosen_column = np.random.choice(
             np.arange(0, self.X.shape[1]), replace=False, size=(self.nb_features, 1)
         ).flatten()
+        
         for col in range(self.X.shape[1]):
             if is_float(self.X[0, col]):
                 if isinstance(self.y.flatten()[0], (np.int_, np.float_)):
