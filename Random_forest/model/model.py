@@ -85,9 +85,6 @@ class RandomForest:
             full_data_bootstraped[:, -1],
         )
 
-        # out_of_bag_computed=self.get_out_of_bag_dataset(self.X, X_bootstraped)
-        # self.out_of_bag_values=out_of_bag_computed
-
         return X_bootstraped, y_bootstraped.reshape(-1, 1)
 
     def fit(self, X: np.array, y: np.array) -> None:
@@ -156,8 +153,6 @@ class RandomForest:
                     if x not in self.out_of_bag_values[i].tolist()
                 ]
             )
-        # Ici, on veut filtrer dans chacun des out of bags en prenant les éléments
-        # qui sont dans X mais pas dans chacun des datasets
 
         model_set = Parallel(n_jobs=int(cpu_count()))(
             delayed(Decision_Tree)(x[0], x[1]) for x in bootstraped_set
