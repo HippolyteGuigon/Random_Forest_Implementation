@@ -85,8 +85,8 @@ class RandomForest:
             full_data_bootstraped[:, -1],
         )
 
-        #out_of_bag_computed=self.get_out_of_bag_dataset(self.X, X_bootstraped)
-        #self.out_of_bag_values=out_of_bag_computed
+        # out_of_bag_computed=self.get_out_of_bag_dataset(self.X, X_bootstraped)
+        # self.out_of_bag_values=out_of_bag_computed
 
         return X_bootstraped, y_bootstraped.reshape(-1, 1)
 
@@ -107,7 +107,7 @@ class RandomForest:
 
         self.X = X
         self.y = y
-        
+
         if self.X.shape[0] != self.y.shape[0]:
             raise ValueError(
                 f"X and y must have the same number of rows, X\
@@ -139,15 +139,25 @@ class RandomForest:
                         must be categorical for classification"
             )
 
-        
         bootstraped_set = Parallel(n_jobs=int(cpu_count()))(
             delayed(self.data_bootstrap)(self.X, self.y)
             for _ in range(0, self.n_estimators)
         )
-        
-        self.out_of_bag_values=np.vstack((dataset[0] for dataset in bootstraped_set))
-        self.out_of_bag_values=np.unique(self.out_of_bag_values,axis=0)
-        self.out_of_bag_values=[x for x in self.X.tolist() if x not in self.out_of_bag_values.tolist()]
+
+        self.out_of_bag_values = np.array(
+            [np.unique(dataset[0], axis=0) for dataset in bootstraped_set]
+        )
+
+        for i in range(self.out_of_bag_values.shape[0]):
+            self.out_of_bag_values[i] = np.array(
+                [
+                    x
+                    for x in self.X.tolist()
+                    if x not in self.out_of_bag_values[i].tolist()
+                ]
+            )
+        # Ici, on veut filtrer dans chacun des out of bags en prenant les éléments
+        # qui sont dans X mais pas dans chacun des datasets
 
         model_set = Parallel(n_jobs=int(cpu_count()))(
             delayed(Decision_Tree)(x[0], x[1]) for x in bootstraped_set
@@ -203,19 +213,21 @@ class RandomForest:
         get the elements that were not
         chosen for the construction of
         the tree
-        
+
         Arguments:
             -X: np.array: The original
             dataset
             -bootstraped_dataset: np.array:
-            The dataset constructed with 
+            The dataset constructed with
             bootstrapping
         Returns:
             -out_of_bag: np.array: The data
             in the X array that are not in the
             boostraped dataset
         """
-        out_of_bag = np.array([x for x in X.tolist() if x not in bootstraped_dataset.tolist()])
+        out_of_bag = np.array(
+            [x for x in X.tolist() if x not in bootstraped_dataset.tolist()]
+        )
         return out_of_bag
 
     def individual_predict(self, X_to_predict: np.array) -> float:
@@ -238,7 +250,7 @@ class RandomForest:
             predictions.append(
                 self.to_predict_data_allocation(X_to_predict, decision_tree.node)
             )
-            
+
         if isinstance(predictions[0], (float, int)):
             prediction = np.mean(predictions)
         else:
