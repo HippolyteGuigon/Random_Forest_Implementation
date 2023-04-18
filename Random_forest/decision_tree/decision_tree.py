@@ -82,7 +82,7 @@ class Node:
         elif self.max_features == "log2":
             self.nb_features = np.floor(np.log2(X.shape[1]))
         else:
-            self.nb_features = self.X.shape[1]
+            self.nb_features = X.shape[1]
 
     def compute_condition(self) -> None:
         """
@@ -101,10 +101,12 @@ class Node:
         variance_reduction = []
         gini_scores = []
         chosen_column = np.random.choice(
-            np.arange(0, self.X.shape[1]), replace=False, size=(self.nb_features, 1)
+            np.arange(0, self.X.shape[1]),
+            replace=False,
+            size=(int(self.nb_features), 1),
         ).flatten()
-        
-        for col in range(self.X.shape[1]):
+
+        for col in chosen_column:
             if is_float(self.X[0, col]):
                 if isinstance(self.y.flatten()[0], (np.int_, np.float_)):
                     variance = variance_reduction_numerical(
@@ -142,7 +144,8 @@ class Node:
                 )
 
         criterion_scores = [tuple(x) for x in criterion_scores]
-        split_column = np.argmin([float(x[0]) for x in criterion_scores])
+        split_column = chosen_column[np.argmin([float(x[0]) for x in criterion_scores])]
+
         if isinstance(criterion_scores[0], (float, int)):
             min_index = np.argmin(criterion_scores)
             chosen_criteria = criterion_scores[min_index]
