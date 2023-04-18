@@ -68,13 +68,21 @@ class Node:
         None
     """
 
-    def __init__(self, X: np.array, y: np.array) -> None:
+    def __init__(self, X: np.array, y: np.array, max_features: str = "sqrt") -> None:
         self.left = None
         self.right = None
         self.X = X
         self.y = y
         self.profondeur = 0
+        self.max_features = max_features
         self.data = []
+
+        if self.max_features == "sqrt":
+            self.nb_features = np.floor(np.sqrt(X.shape[1]))
+        elif self.max_features == "log2":
+            self.nb_features = np.floor(np.log2(X.shape[1]))
+        else:
+            self.nb_features = self.X.shape[1]
 
     def compute_condition(self) -> None:
         """
@@ -89,9 +97,13 @@ class Node:
         Returns:
             None
         """
+
         variance_reduction = []
         gini_scores = []
-
+        chosen_column = np.random.choice(
+            np.arange(0, self.X.shape[1]), replace=False, size=(self.nb_features, 1)
+        ).flatten()
+        
         for col in range(self.X.shape[1]):
             if is_float(self.X[0, col]):
                 if isinstance(self.y.flatten()[0], (np.int_, np.float_)):
@@ -257,12 +269,14 @@ class Decision_Tree:
         y: np.array,
         max_depth: int = max_depth,
         min_samples_split: int = min_sample_split,
+        max_features: str = "sqrt",
     ) -> None:
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.X = X
         self.y = y
-        self.node = Node(X, y)
+        self.max_features = max_features
+        self.node = Node(X, y, max_features=self.max_features)
 
     def grow_node(self, node) -> None:
         """
