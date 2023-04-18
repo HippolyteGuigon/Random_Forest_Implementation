@@ -1,8 +1,10 @@
 import numpy as np
+import logging
 from sklearn.utils import check_random_state
 from Random_forest.decision_tree.decision_tree import Decision_Tree
 from Random_forest.decision_tree.array_functions import is_float
 from Random_forest.configs.confs import load_conf
+from Random_forest.logs.logs import main
 from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 
@@ -10,6 +12,11 @@ main_params = load_conf("configs/main.yml", include=True)
 max_depth = main_params["model_hyperparameters"]["max_depth"]
 min_sample_split = main_params["model_hyperparameters"]["min_sample_split"]
 
+main()
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
 
 class RandomForest:
     """
@@ -70,6 +77,8 @@ class RandomForest:
             raise ValueError(f"The max_features hyperparameter must be sqrt,\
                               log2 or None, got {self.max_features}")
         
+        logging.info("Model initialized")
+
     def data_bootstrap(self, X: np.array, y: np.array) -> np.array:
         """
         The goal of this function is to build a
@@ -143,14 +152,20 @@ class RandomForest:
                         must be categorical for classification"
             )
 
+        logging.warning("Model fitting...")
+
         bootstraped_set = Parallel(n_jobs=int(cpu_count()))(
             delayed(self.data_bootstrap)(self.X, self.y)
             for _ in range(0, self.n_estimators)
         )
 
+        logging.info("Bootstraped set initialized")
+
         self.out_of_bag_values = np.array(
-            [np.unique(dataset[0], axis=0) for dataset in bootstraped_set]
+            [np.unique(dataset[0].astype("<U32"), axis=0) for dataset in bootstraped_set]
         )
+
+        logging.info("Out of bag values determined")
 
         for i in range(self.out_of_bag_values.shape[0]):
             self.out_of_bag_values[i] = np.array(
@@ -170,6 +185,8 @@ class RandomForest:
         )
 
         self.model_set = model_set
+
+        logger.warning("Model has finished fitting !")
 
     def to_predict_data_allocation(self, data: np.array, node) -> float:
         """
@@ -201,11 +218,13 @@ class RandomForest:
                     self.to_predict_data_allocation(data, self.current_node.right)
 
             self.current_node.y = self.current_node.y.flatten()
+
             if is_float(self.current_node.y[0]):
                 return np.mean(self.current_node.y.astype(float))
             else:
                 values, counts = np.unique(self.current_node.y, return_counts=True)
                 return values[counts.argmax()]
+        
 
     def individual_predict(self, X_to_predict: np.array) -> float:
         """
@@ -227,6 +246,7 @@ class RandomForest:
             predictions.append(
                 self.to_predict_data_allocation(X_to_predict, decision_tree.node)
             )
+            
 
         if isinstance(predictions[0], (float, int)):
             prediction = np.mean(predictions)
@@ -249,6 +269,9 @@ class RandomForest:
             made by the model
         """
 
+        if full_X_to_predict.dtype=="O":
+            full_X_to_predict=full_X_to_predict.astype("<U32")
+            
         if not hasattr(self, "model_set"):
             raise AssertionError(
                 "The model needs to be fitted\
@@ -263,6 +286,14 @@ class RandomForest:
         
         predicted = []
         for x in full_X_to_predict:
-            predicted.append(self.individual_predict(x))
+            try:
+                prediction=self.individual_predict(x)
+            except:
+                if is_float(self.y[0]):
+                    prediction=np.mean(self.y)
+                else:
+                    values, counts = np.unique(self.y, return_counts=True)
+                    prediction= values[counts.argmax()]
+            predicted.append(prediction)
 
         return predicted
