@@ -207,31 +207,6 @@ class RandomForest:
                 values, counts = np.unique(self.current_node.y, return_counts=True)
                 return values[counts.argmax()]
 
-    def get_out_of_bag_dataset(
-        self, X: np.array, bootstraped_dataset: np.array
-    ) -> np.array:
-        """
-        The goal of this function is to
-        get the elements that were not
-        chosen for the construction of
-        the tree
-
-        Arguments:
-            -X: np.array: The original
-            dataset
-            -bootstraped_dataset: np.array:
-            The dataset constructed with
-            bootstrapping
-        Returns:
-            -out_of_bag: np.array: The data
-            in the X array that are not in the
-            boostraped dataset
-        """
-        out_of_bag = np.array(
-            [x for x in X.tolist() if x not in bootstraped_dataset.tolist()]
-        )
-        return out_of_bag
-
     def individual_predict(self, X_to_predict: np.array) -> float:
         """
         The goal of this function is to
@@ -260,7 +235,7 @@ class RandomForest:
             prediction = values[counts.argmax()]
         return prediction
 
-    def predict(self, X: np.array) -> np.array:
+    def predict(self, full_X_to_predict: np.array) -> np.array:
         """
         The goal of this function is to
         predict a all array
@@ -278,9 +253,16 @@ class RandomForest:
             raise AssertionError(
                 "The model needs to be fitted\
                                  first before predicting"
-            )
+            )   
+        
+        if full_X_to_predict.shape[1] != self.X.shape[1]:
+            raise ValueError(f"The array to predict must be the\
+                             same size as the one used to fit the model, but\
+                             got respectively {full_X_to_predict.shape[1]} and\
+                              {self.X.shape[1]} columns")
+        
         predicted = []
-        for x in X:
+        for x in full_X_to_predict:
             predicted.append(self.individual_predict(x))
 
         return predicted

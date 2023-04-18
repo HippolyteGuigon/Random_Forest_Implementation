@@ -33,7 +33,7 @@ Image of a Random Forest decision process
 
 1. To import the model, run the following command: ```from Random_forest.model.model import RandomForest```
 
-2. Then, use ```model=RandomForest()``` and adjust hyperparameters according to your goals
+2. Then, use ```model=RandomForest()``` and adjust hyperparameters according to your goals. Not that if you want to use RandomForest for regression, you'll have to set ```objective="regression"``` and ```objctive="classification"``` according to which suprvised method you wish to use
 
 3. Run ```model.fit(X, y)```
 
