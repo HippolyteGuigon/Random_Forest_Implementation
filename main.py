@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 from Random_forest.model.model import RandomForest
-from Random_forest.decision_tree.array_functions import get_random_set, is_float
+from Random_forest.decision_tree.array_functions import get_random_set
 from Random_forest.configs.confs import load_conf
 
 main_params = load_conf("configs/main.yml", include=True)

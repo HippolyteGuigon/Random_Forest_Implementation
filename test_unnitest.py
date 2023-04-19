@@ -195,6 +195,53 @@ class Test(unittest.TestCase):
         self.assertTrue(np.all(classification_predictions))
         self.assertTrue(np.all(regression_predictions))
 
+    def test_score(self) -> None:
+        """
+        The goal of this function
+        is to test the model ability
+        to score a result
+
+        Arguments:
+            -None
+
+        Returns:
+            -None
+        """
+
+        X, y = get_random_set(
+            row_size_test_dataset=row_size_test_dataset, objective="classification"
+        )
+        X_predict_classification, y_predict_classification = get_random_set(
+            row_size_test_dataset=30, objective="classification"
+        )
+
+        model_classification = RandomForest(objective="classification")
+        model_classification.fit(X, y)
+
+        classification_predictions = model_classification.predict(
+            X_predict_classification
+        )
+
+        X, y = get_random_set(
+            row_size_test_dataset=row_size_test_dataset, objective="regression"
+        )
+        X_predict_regression, y_predict_regression = get_random_set(
+            row_size_test_dataset=30, objective="regression"
+        )
+
+        model_regression = RandomForest(objective="regression")
+        model_regression.fit(X, y)
+
+        regression_predictions = model_regression.predict(X_predict_regression)
+
+        accuracy = model_classification.score(
+            classification_predictions, y_predict_classification
+        )
+        r_squared = model_regression.score(regression_predictions, y_predict_regression)
+
+        self.assertTrue((accuracy >= 0 and accuracy <= 1))
+        self.assertTrue(isinstance(r_squared, float))
+
 
 if __name__ == "__main__":
     main()

@@ -298,4 +298,27 @@ class RandomForest:
             prediction = self.individual_predict(x)
             predicted.append(prediction)
 
+        predicted = np.array(predicted)
+
         return predicted
+
+    def score(self, y_pred: np.array, y_test: np.array) -> float:
+        """
+        The goal of this function is, once
+        the model has been fitted, to compute
+        its score regarding its objective (regression
+        or classification)
+
+        Arguments:
+            -y_pred: np.array: The predictions made
+            by the model
+            -y_test: np.array: The real values
+        """
+
+        if self.objective == "classification":
+            return np.mean(y_pred == y_test)
+        else:
+            rss = ((y_pred - y_test) ** 2).sum()
+            tss = ((y_test - y_test.mean()) ** 2).sum()
+            r_squared = 1 - rss / tss
+            return r_squared
