@@ -18,6 +18,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
 
+
 class RandomForest:
     """
     The goal of this class is the
@@ -50,7 +51,7 @@ class RandomForest:
         self.max_depth = max_depth
         self.n_estimators = n_estimators
         self.min_samples_split = min_sample_split
-        self.max_features=max_features
+        self.max_features = max_features
         self.objective = objective
 
         if self.objective not in ["classification", "regression"]:
@@ -58,7 +59,6 @@ class RandomForest:
                 f"The objective of the Random Forest is classification\
                               or regression got the argument {self.objective}"
             )
-        
 
         for param, value in kwargs.items():
             if param not in main_params.keys():
@@ -74,9 +74,11 @@ class RandomForest:
                 setattr(self, param, value)
 
         if self.max_features not in ["sqrt", "log2", None]:
-            raise ValueError(f"The max_features hyperparameter must be sqrt,\
-                              log2 or None, got {self.max_features}")
-        
+            raise ValueError(
+                f"The max_features hyperparameter must be sqrt,\
+                              log2 or None, got {self.max_features}"
+            )
+
         logging.info("Model initialized")
 
     def data_bootstrap(self, X: np.array, y: np.array) -> np.array:
@@ -162,7 +164,10 @@ class RandomForest:
         logging.info("Bootstraped set initialized")
 
         self.out_of_bag_values = np.array(
-            [np.unique(dataset[0].astype("<U32"), axis=0) for dataset in bootstraped_set]
+            [
+                np.unique(dataset[0].astype("<U32"), axis=0)
+                for dataset in bootstraped_set
+            ]
         )
 
         logging.info("Out of bag values determined")
@@ -219,12 +224,14 @@ class RandomForest:
 
             self.current_node.y = self.current_node.y.flatten()
 
+            if len(self.current_node.y) == 0:
+                print(self.current_node.y)
+
             if is_float(self.current_node.y[0]):
                 return np.mean(self.current_node.y.astype(float))
             else:
                 values, counts = np.unique(self.current_node.y, return_counts=True)
                 return values[counts.argmax()]
-        
 
     def individual_predict(self, X_to_predict: np.array) -> float:
         """
@@ -246,7 +253,6 @@ class RandomForest:
             predictions.append(
                 self.to_predict_data_allocation(X_to_predict, decision_tree.node)
             )
-            
 
         if isinstance(predictions[0], (float, int)):
             prediction = np.mean(predictions)
@@ -269,31 +275,27 @@ class RandomForest:
             made by the model
         """
 
-        if full_X_to_predict.dtype=="O":
-            full_X_to_predict=full_X_to_predict.astype("<U32")
-            
+        if full_X_to_predict.dtype == "O":
+            full_X_to_predict = full_X_to_predict.astype("<U32")
+
         if not hasattr(self, "model_set"):
             raise AssertionError(
                 "The model needs to be fitted\
                                  first before predicting"
-            )   
-        
+            )
+
         if full_X_to_predict.shape[1] != self.X.shape[1]:
-            raise ValueError(f"The array to predict must be the\
+            raise ValueError(
+                f"The array to predict must be the\
                              same size as the one used to fit the model, but\
                              got respectively {full_X_to_predict.shape[1]} and\
-                              {self.X.shape[1]} columns")
-        
+                              {self.X.shape[1]} columns"
+            )
+
         predicted = []
+
         for x in full_X_to_predict:
-            try:
-                prediction=self.individual_predict(x)
-            except:
-                if is_float(self.y[0]):
-                    prediction=np.mean(self.y)
-                else:
-                    values, counts = np.unique(self.y, return_counts=True)
-                    prediction= values[counts.argmax()]
+            prediction = self.individual_predict(x)
             predicted.append(prediction)
 
         return predicted

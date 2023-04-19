@@ -1,9 +1,10 @@
-#Files to be excluded 
+#Files to be excluded
 
 *.txt
 *.ipynb
 *ressources/.DS_Store
 *.vscode/
+*.csv
 
 #Except these files
 
