@@ -299,14 +299,18 @@ class Decision_Tree:
         ):
             node.compute_condition()
             node.get_data_subsets()
-            node.left = Node(node.X_left_node, node.y_left_node)
-            node.right = Node(node.X_right_node, node.y_right_node)
-            node.left.profondeur = node.profondeur + 1
-            node.right.profondeur = node.profondeur + 1
 
-            if node.left.X.shape[0] >= self.min_samples_split:
-                self.grow_node(node.left)
-            if node.right.X.shape[0] >= self.min_samples_split:
-                self.grow_node(node.right)
+            if len(node.y_left_node) > 0 and len(node.y_right_node) > 0:
+                node.left = Node(node.X_left_node, node.y_left_node)
+                node.right = Node(node.X_right_node, node.y_right_node)
+
+                node.left.profondeur = node.profondeur + 1
+                node.right.profondeur = node.profondeur + 1
+
+                if node.left.X.shape[0] >= self.min_samples_split:
+                    self.grow_node(node.left)
+
+                if node.right.X.shape[0] >= self.min_samples_split:
+                    self.grow_node(node.right)
 
         return self
