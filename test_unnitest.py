@@ -131,7 +131,7 @@ class Test(unittest.TestCase):
             data_test_true = split_value
             self.assertTrue(Tree.condition(data_test_true, reference_value=split_value))
 
-    def test_tree_values_allocation(self):
+    def test_tree_values_allocation(self) -> None:
         """
         The goal of this function is to check if
         the values given to a binary tree are well
@@ -155,7 +155,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(bottom_sum, row_size_test_dataset)
 
-    def test_model_prediction(self):
+    def test_model_prediction(self) -> None:
         """
         The goal of this function is
         to check if the model can deliver
